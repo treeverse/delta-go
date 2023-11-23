@@ -909,7 +909,7 @@ func TestLog_schema_must_contain_all_partition_columns(t *testing.T) {
 
 	schema := types.NewStructType([]*types.StructField{
 		types.NewStructField("a", &types.StringType{}, true),
-		types.NewStructField("b", &types.LongType{}, true),
+		types.NewStructField("b", &types.BigIntType{}, true),
 		types.NewStructField("foo", &types.IntegerType{}, true),
 		types.NewStructField("bar", &types.BooleanType{}, true),
 	})
@@ -965,7 +965,7 @@ func TestLog_schema_contains_no_data_columns_and_only_partition_columns(t *testi
 
 			schema := types.NewStructType([]*types.StructField{
 				types.NewStructField("part_1", &types.StringType{}, true),
-				types.NewStructField("part_2", &types.LongType{}, true),
+				types.NewStructField("part_2", &types.BigIntType{}, true),
 			})
 			schemaString, err := types.ToJSON(schema)
 			assert.NoError(t, err)
