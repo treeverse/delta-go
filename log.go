@@ -57,6 +57,45 @@ func getLogPath(dataPath string) string {
 	return logPath
 }
 
+// ForTableWithStore Create a DeltaLog instance representing the table located at the provided path using the provided
+// logStore (or initializing a new one if not provided).
+func ForTableWithStore(dataPath string, config Config, clock Clock, ls *store.Store) (Log, error) {
+	logPath := getLogPath(dataPath)
+
+	deltaLogLock := &sync.Mutex{}
+	var logStore = ls
+	if logStore == nil {
+		s, err := store.New(logPath)
+		logStore = &s
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	parquetReader, err := newCheckpointReader(logPath)
+	if err != nil {
+		return nil, err
+	}
+
+	historyManager := &historyManager{logStore: *logStore}
+	snaptshotManager, err := newSnapshotReader(config, parquetReader, *logStore, clock, historyManager, deltaLogLock)
+	if err != nil {
+		return nil, err
+	}
+
+	logImpl := &logImpl{
+		dataPath:       dataPath,
+		logPath:        logPath,
+		clock:          clock,
+		store:          *logStore,
+		deltaLogLock:   deltaLogLock,
+		history:        historyManager,
+		snapshotReader: snaptshotManager,
+	}
+
+	return logImpl, nil
+}
+
 // ForTable Create a DeltaLog instance representing the table located at the provided path.
 func ForTable(dataPath string, config Config, clock Clock) (Log, error) {
 	logPath := getLogPath(dataPath)
