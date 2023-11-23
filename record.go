@@ -52,8 +52,16 @@ func (p *PartitionRowRecord) GetInt(fieldName string) (int, error) {
 	return strconv.Atoi(v)
 }
 
-func (p *PartitionRowRecord) GetInt64(fieldName string) (int64, error) {
-	v, err := checkPrimitiveField[*types.LongType](p, fieldName, "long")
+func (p *PartitionRowRecord) GetBigInt64(fieldName string) (int64, error) {
+	v, err := checkPrimitiveField[*types.BigIntType](p, fieldName, "bigint")
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(v, 10, 64)
+}
+
+func (p *PartitionRowRecord) GetLongInt64(fieldName string) (int64, error) {
+	v, err := checkPrimitiveField[*types.BigIntType](p, fieldName, "long")
 	if err != nil {
 		return 0, err
 	}
