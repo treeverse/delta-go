@@ -17,6 +17,7 @@ func TestLiteral(t *testing.T) {
 	testLiteral(LiteralDouble(float64(1.0)), float64(1.0), t)
 	testLiteral(LiteralInt(5), 5, t)
 	testLiteral(LiteralLong(int64(10)), int64(10), t)
+	testLiteral(LiteralBigInt(int64(10)), int64(10), t)
 
 	testLiteral(LiteralNull(&BooleanType{}), nil, t)
 	testLiteral(LiteralNull(&IntegerType{}), nil, t)

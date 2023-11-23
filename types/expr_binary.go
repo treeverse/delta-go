@@ -73,7 +73,7 @@ func compareWithType(dataType DataType, l any, r any) (int, error) {
 		return primitiveCompare[int](l, r), nil
 	case *FloatType:
 		return primitiveCompare[float32](l, r), nil
-	case *LongType:
+	case *BigIntType, *LongType:
 		return primitiveCompare[int64](l, r), nil
 	case *ByteType:
 		return primitiveCompare[byte](l, r), nil

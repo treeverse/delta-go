@@ -63,6 +63,7 @@ func TestDataTypeSerde(t *testing.T) {
 	check(&ByteType{})
 	check(&ShortType{})
 	check(&IntegerType{})
+	check(&BigIntType{})
 	check(&LongType{})
 	check(&FloatType{})
 	check(&DoubleType{})

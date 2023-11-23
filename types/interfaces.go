@@ -13,7 +13,8 @@ type RowRecord interface {
 	IsNullAt(fieldName string) (bool, error)
 
 	GetInt(fieldName string) (int, error)
-	GetInt64(fieldName string) (int64, error)
+	GetBigInt64(fieldName string) (int64, error)
+	GetLongInt64(fieldName string) (int64, error)
 	GetByte(fieldName string) (int8, error)
 	GetShort(fieldName string) (int16, error)
 	GetBoolean(fieldName string) (bool, error)
