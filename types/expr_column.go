@@ -19,8 +19,10 @@ func NewColumn(name string, t DataType) *Column {
 	switch t.(type) {
 	case *IntegerType:
 		col.nullSafeEval = func(r RowRecord) (any, error) { return r.GetInt(name) }
+	case *BigIntType:
+		col.nullSafeEval = func(r RowRecord) (any, error) { return r.GetBigInt64(name) }
 	case *LongType:
-		col.nullSafeEval = func(r RowRecord) (any, error) { return r.GetInt64(name) }
+		col.nullSafeEval = func(r RowRecord) (any, error) { return r.GetLongInt64(name) }
 	case *ByteType:
 		col.nullSafeEval = func(r RowRecord) (any, error) { return r.GetByte(name) }
 	case *ShortType:

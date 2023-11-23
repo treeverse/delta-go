@@ -63,6 +63,10 @@ func LiteralFloat(f float32) *Literal {
 	return &Literal{Value: f, Type: &FloatType{}}
 }
 
+func LiteralBigInt(n int64) *Literal {
+	return &Literal{Value: n, Type: &BigIntType{}}
+}
+
 func LiteralLong(n int64) *Literal {
 	return &Literal{Value: n, Type: &LongType{}}
 }

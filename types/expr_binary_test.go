@@ -65,6 +65,7 @@ func TestComparison(t *testing.T) {
 	inputs := []input{
 		{LiteralInt(1), LiteralInt(2), LiteralInt(1), LiteralNull(&IntegerType{})},
 		{LiteralFloat(1), LiteralFloat(2), LiteralFloat(1), LiteralNull(&FloatType{})},
+		{LiteralBigInt(1), LiteralBigInt(2), LiteralBigInt(1), LiteralNull(&BigIntType{})},
 		{LiteralLong(1), LiteralLong(2), LiteralLong(1), LiteralNull(&LongType{})},
 		{LiteralShort(1), LiteralShort(2), LiteralShort(1), LiteralNull(&ShortType{})},
 		{LiteralDouble(1), LiteralDouble(2), LiteralDouble(1), LiteralNull(&DoubleType{})},

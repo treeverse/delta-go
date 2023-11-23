@@ -11,8 +11,8 @@ import (
 )
 
 var nonDecimalTypes []DataType = []DataType{
-	&BinaryType{}, &BooleanType{}, &ByteType{}, &DateType{}, &DoubleType{},
-	&FloatType{}, &IntegerType{}, &LongType{}, &NullType{}, &ShortType{}, &StringType{}, &TimestampType{},
+	&BinaryType{}, &BooleanType{}, &ByteType{}, &DateType{}, &DoubleType{}, &LongType{},
+	&FloatType{}, &IntegerType{}, &BigIntType{}, &NullType{}, &ShortType{}, &StringType{}, &TimestampType{},
 }
 
 var nonDecimalNameToType map[string]DataType = make(map[string]DataType)

@@ -64,11 +64,18 @@ func (i *IntegerType) Name() string {
 	return "integer"
 }
 
+type BigIntType struct {
+}
+
+func (l *BigIntType) Name() string {
+	return "bigint"
+}
+
 type LongType struct {
 }
 
 func (l *LongType) Name() string {
-	return "bigint"
+	return "long"
 }
 
 type NullType struct {
