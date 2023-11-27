@@ -66,6 +66,19 @@ func ConvertToBlobURL(urlstr string) (string, error) {
 		}
 		u.RawQuery = q
 		return u.String(), nil
+	} else {
+		storage, prefix, found := strings.Cut(u.Path, "/")
+		u.Path = storage
+		// set prefix
+		if found {
+			v.Set("prefix", prefix)
+		}
+		q, err := url.QueryUnescape(v.Encode())
+		if err != nil {
+			return "", eris.Wrap(err, "")
+		}
+		u.RawQuery = q
+		return u.String(), nil
 	}
 
 	return "", eris.New("not supported scheme" + u.Scheme)
