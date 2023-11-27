@@ -29,8 +29,11 @@ type Snapshot interface {
 	// Metadata returns the table metadata for this snapshot
 	Metadata() (*action.Metadata, error)
 
-	// Version returns the versiion of this Snapshot
+	// Version returns the version of this Snapshot
 	Version() int64
+
+	// EarliestVersion returns the earliest version in this Snapshot
+	EarliestVersion() (int64, error)
 
 	// todo: i do not want to implement this for now
 	// CloseableIterator<RowRecord> open();
@@ -128,9 +131,20 @@ func (s *snapshotImp) Metadata() (*action.Metadata, error) {
 	return t.V2, err
 }
 
-// Version returns the versiion of this Snapshot
 func (s *snapshotImp) Version() int64 {
 	return s.version
+}
+
+func (s *snapshotImp) EarliestVersion() (int64, error) {
+	lastCheckpoint, err := LastCheckpoint(s.store)
+	if err != nil {
+		return 0, err
+	}
+	v, ok := lastCheckpoint.Get()
+	if !ok {
+		return 0, nil
+	}
+	return v.Version, nil
 }
 
 func (s *snapshotImp) tombstones() ([]*action.RemoveFile, error) {
