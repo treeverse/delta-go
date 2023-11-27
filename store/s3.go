@@ -50,6 +50,9 @@ func NewS3LogStore(logDir string) (*S3SingleDriverLogStore, error) {
 func NewS3CompatLogStore(awsProps *storage.AWSProperties, u *url.URL) (*S3SingleDriverLogStore, error) {
 	ctx := context.Background()
 	cfg, err := storage.GenerateConfig(ctx, awsProps)
+	if err != nil {
+		return nil, err
+	}
 	bucketOpener := storage.NewS3CompatBucketURLOpener(cfg, *awsProps)
 	bucket, err := bucketOpener.OpenBucketURL(ctx, u)
 	if err != nil {
