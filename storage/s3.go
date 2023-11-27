@@ -32,6 +32,26 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 	return s3blob.OpenBucketV2(ctx, clientV2, u.Host, nil)
 }
 
+// RegisterS3CompatBucketURLOpener is used to associate a scheme with a BucketURLOpener.
+// scheme is the URL scheme that will be used to identify the registered BucketURLOpener with a given URL.
+// awsProps specify common S3-compatible storage configurations.
+// Example:
+//
+//		awsProps := AWSProperties{
+//			Region: "us-west-2",
+//			ForcePathStyle: true,
+//			Endpoint: "http://localhost:8090",
+//			CredsProvider: aws.CredentialsProviderFunc(func(context.Context) (aws.Credentials, error) {
+//				return aws.Credentials{
+//					AccessKeyID:     "EXAMPLEACCESSKEY",
+//					SecretAccessKey: "EXAMPLESECRETACCESSKEY",
+//				}, nil
+//			}),
+//		}
+//		RegisterS3CompatBucketURLOpener("myscheme", &awsProps)
+//
+//	 // 'blob.OpenBucket' uses the registered BucketURLOpener to retrieve a bucket client:
+//		b, err := blob.OpenBucket(context.Background(), "myscheme://my-bucket/some/path")
 func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties) {
 	defer func() {
 		if r := recover(); r != nil {
