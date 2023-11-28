@@ -29,6 +29,9 @@ type Snapshot interface {
 	// Metadata returns the table metadata for this snapshot
 	Metadata() (*action.Metadata, error)
 
+	// Protocol returns the table protocol for this snapshot
+	Protocol() (*action.Protocol, error)
+
 	// Version returns the version of this Snapshot
 	Version() int64
 
@@ -129,6 +132,12 @@ func (s *snapshotImp) AllFiles() ([]*action.AddFile, error) {
 func (s *snapshotImp) Metadata() (*action.Metadata, error) {
 	t, err := s.protocolAndMetadata.Get()
 	return t.V2, err
+}
+
+// Protocol returns the table protocol for this snapshot
+func (s *snapshotImp) Protocol() (*action.Protocol, error) {
+	t, err := s.protocolAndMetadata.Get()
+	return t.V1, err
 }
 
 func (s *snapshotImp) Version() int64 {
