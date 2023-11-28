@@ -84,13 +84,14 @@ func ForTableWithStore(dataPath string, config Config, clock Clock, ls *store.St
 	}
 
 	logImpl := &logImpl{
-		dataPath:       dataPath,
-		logPath:        logPath,
-		clock:          clock,
-		store:          *logStore,
-		deltaLogLock:   deltaLogLock,
-		history:        historyManager,
-		snapshotReader: snaptshotManager,
+		dataPath:         dataPath,
+		logPath:          logPath,
+		clock:            clock,
+		store:            *logStore,
+		deltaLogLock:     deltaLogLock,
+		history:          historyManager,
+		snapshotReader:   snaptshotManager,
+		checkpointReader: &parquetReader,
 	}
 
 	return logImpl, nil
@@ -173,13 +174,14 @@ func ForTable(dataPath string, config Config, clock Clock) (Log, error) {
 // }
 
 type logImpl struct {
-	dataPath       string
-	logPath        string
-	clock          Clock
-	store          store.Store
-	deltaLogLock   *sync.Mutex
-	history        *historyManager
-	snapshotReader *SnapshotReader
+	dataPath         string
+	logPath          string
+	clock            Clock
+	store            store.Store
+	deltaLogLock     *sync.Mutex
+	history          *historyManager
+	snapshotReader   *SnapshotReader
+	checkpointReader *checkpointReader
 }
 
 // Snapshot the current Snapshot of the Delta table.
@@ -222,23 +224,32 @@ func (l *logImpl) Path() string {
 	return l.dataPath
 }
 
-// Get all actions starting from startVersion (inclusive) in increasing order of committed version.
+// Changes Get all actions starting from startVersion (inclusive) in increasing order of committed version.
 // If startVersion doesn't exist, return an empty Iterator.
 func (l *logImpl) Changes(startVersion int64, failOnDataLoss bool) (iter.Iter[VersionLog], error) {
 	if startVersion < 0 {
 		return nil, eris.Wrap(errno.ErrIllegalArgument, "invalid startVersion")
 	}
-
-	fs, err := l.store.ListFrom(filenames.DeltaFile("", startVersion))
+	var fs iter.Iter[*store.FileMeta]
+	checkpointIncluded := true
+	fs, err := l.store.ListFrom(filenames.CheckpointFileSingular("", startVersion))
 	if err != nil {
-		return nil, err
+		checkpointIncluded = false
+		fs, err = l.store.ListFrom(filenames.DeltaFile("", startVersion))
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer fs.Close()
 
 	var deltaPaths []string
 	for f, err := fs.Next(); err == nil; f, err = fs.Next() {
-		if filenames.IsDeltaFile(f.Path()) {
-			deltaPaths = append(deltaPaths, f.Path())
+		p := f.Path()
+		if checkpointIncluded && filenames.IsCheckpointFile(p) {
+			deltaPaths = append(deltaPaths, p)
+			checkpointIncluded = false
+		} else if filenames.IsDeltaFile(p) {
+			deltaPaths = append(deltaPaths, p)
 		}
 	}
 	if err != nil && err != io.EOF {
@@ -248,6 +259,16 @@ func (l *logImpl) Changes(startVersion int64, failOnDataLoss bool) (iter.Iter[Ve
 	lastSeenVersion := startVersion - 1
 	versionLogs := make([]VersionLog, len(deltaPaths))
 	for i, deltaPath := range deltaPaths {
+		if filenames.IsCheckpointFile(deltaPath) {
+			version := filenames.CheckpointVersion(deltaPath)
+			versionLogs[i] = &MemOptimizedCheckpoint{
+				version: version,
+				path:    deltaPath,
+				store:   l.store,
+				cr:      l.checkpointReader,
+			}
+			continue
+		}
 		version := filenames.DeltaVersion(deltaPath)
 		if failOnDataLoss && version > lastSeenVersion+1 {
 			return nil, errno.IllegalStateError("fail on data loss")
