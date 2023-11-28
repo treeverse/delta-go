@@ -51,13 +51,13 @@ func CheckMetadataProtocolProperties(metadata *Metadata, protocol *Protocol) err
 }
 
 type SingleAction struct {
-	Txn        *SetTransaction `json:"txn"`
-	Add        *AddFile        `json:"add"`
-	Remove     *RemoveFile     `json:"remove"`
-	MetaData   *Metadata       `json:"metaData"`
-	Protocol   *Protocol       `json:"protocol"`
-	Cdc        *AddCDCFile     `json:"cdc"`
-	CommitInfo *CommitInfo     `json:"commitInfo"`
+	Txn        *SetTransaction `json:"txn,omitempty"`
+	Add        *AddFile        `json:"add,omitempty"`
+	Remove     *RemoveFile     `json:"remove,omitempty"`
+	MetaData   *Metadata       `json:"metaData,omitempty"`
+	Protocol   *Protocol       `json:"protocol,omitempty"`
+	Cdc        *AddCDCFile     `json:"cdc,omitempty"`
+	CommitInfo *CommitInfo     `json:"commitInfo,omitempty"`
 }
 
 func (s *SingleAction) Unwrap() Action {
