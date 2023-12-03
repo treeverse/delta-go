@@ -69,3 +69,44 @@ func (m *MemOptimizedVersionLog) ActionIter() (iter.Iter[action.Action], error) 
 	}
 	return mapIter, nil
 }
+
+type MemOptimizedCheckpoint struct {
+	version int64
+	path    string
+	store   store.Store
+	cr      *checkpointReader
+}
+
+func (m *MemOptimizedCheckpoint) Version() int64 {
+	return m.version * -1
+}
+
+func (m *MemOptimizedCheckpoint) Actions() ([]action.Action, error) {
+	cr := *(m.cr)
+	i, err := cr.Read(m.path)
+	if err != nil {
+		return nil, err
+	}
+	defer i.Close()
+
+	return iter.Map(i, func(a action.Action) (action.Action, error) {
+		if a.Wrap().MetaData != nil {
+			md := a.Wrap().MetaData
+			if md.Configuration == nil {
+				md.Configuration = map[string]string{}
+			}
+			if md.PartitionColumns == nil {
+				md.PartitionColumns = []string{}
+			}
+			if md.Format.Options == nil {
+				md.Format.Options = map[string]string{}
+			}
+		}
+		return a, nil
+	})
+}
+
+func (m *MemOptimizedCheckpoint) ActionIter() (iter.Iter[action.Action], error) {
+	cr := *(m.cr)
+	return cr.Read(m.path)
+}

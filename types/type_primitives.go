@@ -68,7 +68,7 @@ type LongType struct {
 }
 
 func (l *LongType) Name() string {
-	return "bigint"
+	return "long"
 }
 
 type NullType struct {

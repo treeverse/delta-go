@@ -1,8 +1,8 @@
 package action
 
 type Protocol struct {
-	MinReaderVersion int32 `json:"minReaderVersion,omitempty"`
-	MinWriterVersion int32 `json:"minWriterVersion,omitempty"`
+	MinReaderVersion int32 `json:"minReaderVersion"`
+	MinWriterVersion int32 `json:"minWriterVersion"`
 }
 
 func (p *Protocol) Wrap() *SingleAction {

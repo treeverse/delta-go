@@ -11,14 +11,14 @@ import (
 )
 
 type Metadata struct {
-	ID               string            `json:"id,omitempty"`
-	Name             string            `json:"name,omitempty"`
-	Description      string            `json:"description,omitempty"`
-	Format           Format            `json:"format,omitempty"`
-	SchemaString     string            `json:"schemaString,omitempty"`
-	PartitionColumns []string          `json:"partitionColumns,omitempty"`
-	Configuration    map[string]string `json:"configuration,omitempty"`
-	CreatedTime      *int64            `json:"createdTime,omitempty"`
+	ID               string            `json:"id"`
+	Name             string            `json:"name"`
+	Description      string            `json:"description"`
+	Format           Format            `json:"format"`
+	SchemaString     string            `json:"schemaString"`
+	PartitionColumns []string          `json:"partitionColumns"`
+	Configuration    map[string]string `json:"configuration"`
+	CreatedTime      *int64            `json:"createdTime"`
 }
 
 func DefaultMetadata() *Metadata {

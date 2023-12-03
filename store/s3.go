@@ -2,6 +2,9 @@ package store
 
 import (
 	"context"
+	"github.com/csimplestring/delta-go/storage"
+	"gocloud.dev/blob"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -9,9 +12,6 @@ import (
 	"github.com/csimplestring/delta-go/internal/util/path"
 	"github.com/csimplestring/delta-go/iter"
 	"github.com/rotisserie/eris"
-
-	goblob "gocloud.dev/blob"
-	_ "gocloud.dev/blob/s3blob"
 )
 
 // Note: currently s3 log store only supports single driver.
@@ -24,7 +24,7 @@ func NewS3LogStore(logDir string) (*S3SingleDriverLogStore, error) {
 		return nil, err
 	}
 
-	bucket, err := goblob.OpenBucket(context.Background(), blobURL)
+	bucket, err := blob.OpenBucket(context.Background(), blobURL)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +45,52 @@ func NewS3LogStore(logDir string) (*S3SingleDriverLogStore, error) {
 		logDir: logDir,
 		s:      s,
 	}, nil
+}
+
+func NewS3CompatLogStore(awsProps *storage.AWSProperties, u *url.URL) (*S3SingleDriverLogStore, error) {
+	ctx := context.Background()
+	cfg, err := storage.GenerateConfig(ctx, awsProps)
+	if err != nil {
+		return nil, err
+	}
+	bucketOpener := storage.NewS3CompatBucketURLOpener(cfg, *awsProps)
+	bucket, err := bucketOpener.OpenBucketURL(ctx, u)
+	if err != nil {
+		return nil, err
+	}
+	logDir := handleLogDirPath(u.Path)
+	bucket = blob.PrefixedBucket(bucket, logDir)
+	if err != nil {
+		return nil, err
+	}
+	s := &baseStore{
+		logDir: logDir,
+		bucket: bucket,
+		beforeWriteFn: func(asFunc func(interface{}) bool) error {
+			return nil
+		},
+		writeErrorFn: func(err error, path string) error {
+			return err
+		},
+	}
+
+	return &S3SingleDriverLogStore{
+		logDir: logDir,
+		s:      s,
+	}, nil
+}
+
+func handleLogDirPath(path string) string {
+	path = strings.TrimPrefix(path, "/")
+	if strings.HasSuffix(path, "_delta_log/") {
+		return path
+	} else if strings.HasSuffix(path, "_delta_log") {
+		return path + "/"
+	} else if strings.HasSuffix(path, "/") {
+		return path + "_delta_log/"
+	} else {
+		return path + "/_delta_log/"
+	}
 }
 
 type S3SingleDriverLogStore struct {
