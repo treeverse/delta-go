@@ -7,8 +7,8 @@ import (
 )
 
 type RemoveFile struct {
-	Path                 string            `json:"path,omitempty"`
-	DataChange           bool              `json:"dataChange,omitempty"`
+	Path                 string            `json:"path"`
+	DataChange           bool              `json:"dataChange"`
 	DeletionTimestamp    *int64            `json:"deletionTimestamp,omitempty"`
 	ExtendedFileMetadata bool              `json:"extendedFileMetadata,omitempty"`
 	PartitionValues      map[string]string `json:"partitionValues,omitempty"`

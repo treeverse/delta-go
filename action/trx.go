@@ -1,8 +1,8 @@
 package action
 
 type SetTransaction struct {
-	AppId       string `json:"appId,omitempty"`
-	Version     int64  `json:"version,omitempty"`
+	AppId       string `json:"appId"`
+	Version     int64  `json:"version"`
 	LastUpdated *int64 `json:"lastUpdated,omitempty"`
 }
 
