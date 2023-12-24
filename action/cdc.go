@@ -5,11 +5,11 @@ import (
 )
 
 type AddCDCFile struct {
-	Path            string            `json:"path,omitempty"`
-	DataChange      bool              `json:"dataChange,omitempty"`
-	PartitionValues map[string]string `json:"partitionValues,omitempty"`
-	Size            int64             `json:"size,omitempty"`
-	Tags            map[string]string `json:"tags,omitempty"`
+	Path            string            `json:"path"`
+	DataChange      bool              `json:"dataChange"`
+	PartitionValues map[string]string `json:"partitionValues"`
+	Size            int64             `json:"size"`
+	Tags            map[string]string `json:"tags"`
 }
 
 func (a *AddCDCFile) IsDataChanged() bool {

@@ -8,11 +8,11 @@ import (
 )
 
 type AddFile struct {
-	Path             string            `json:"path,omitempty"`
-	DataChange       bool              `json:"dataChange,omitempty"`
-	PartitionValues  map[string]string `json:"partitionValues,omitempty"`
-	Size             int64             `json:"size,omitempty"`
-	ModificationTime int64             `json:"modificationTime,omitempty"`
+	Path             string            `json:"path"`
+	DataChange       bool              `json:"dataChange"`
+	PartitionValues  map[string]string `json:"partitionValues"`
+	Size             int64             `json:"size"`
+	ModificationTime int64             `json:"modificationTime"`
 	Stats            string            `json:"stats,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 }
