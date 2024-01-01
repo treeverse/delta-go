@@ -325,11 +325,7 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 	obj.AddField("operation").SetByteArray([]byte(add.Operation))
 	ops := make(map[string]string, len(add.OperationParameters))
 	for k, v := range add.OperationParameters {
-		if vs, ok := v.(string); !ok {
-			ops[k] = fmt.Sprintf("%v", v)
-		} else {
-			ops[k] = vs
-		}
+		ops[k] = fmt.Sprint(v)
 	}
 	parquet.MarshalMap(obj, "operationParameters", ops)
 	if add.ClusterId != nil {
@@ -368,14 +364,14 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 	return nil
 }
 
+/**
+ * commitInfo isn't included in a checkpoint parquet file:
+ * https://github.com/delta-io/delta/blob/master/connectors/standalone/src/main/scala/io/delta/standalone/internal/actions/actions.scala#L230
+ * Holds provenance information about changes to the table. This [[Action]]
+ * is not stored in the checkpoint and has reduced compatibility guarantees.
+ * Information stored in it is best effort (i.e. can be falsified by the writer).
+ */
 func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.UnmarshalObject) error {
-	// commitInfo isn't included in a checkpoint parquet file:
-	/**
-	 * https://github.com/delta-io/delta/blob/master/connectors/standalone/src/main/scala/io/delta/standalone/internal/actions/actions.scala#L230
-	 * Holds provenance information about changes to the table. This [[Action]]
-	 * is not stored in the checkpoint and has reduced compatibility guarantees.
-	 * Information stored in it is best effort (i.e. can be falsified by the writer).
-	 */
 	g, err := obj.GetField("commitInfo").Group()
 	if err != nil {
 		return err
