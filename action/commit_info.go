@@ -16,7 +16,7 @@ type CommitInfo struct {
 	UserID              *string           `json:"userId,omitempty"`
 	UserName            *string           `json:"userName,omitempty"`
 	Operation           string            `json:"operation,omitempty"`
-	OperationParameters map[string]string `json:"operationParameters,omitempty"`
+	OperationParameters map[string]any    `json:"operationParameters,omitempty"`
 	Job                 *JobInfo          `json:"job,omitempty"`
 	Notebook            *NotebookInfo     `json:"notebook,omitempty"`
 	ClusterId           *string           `json:"clusterId,omitempty"`

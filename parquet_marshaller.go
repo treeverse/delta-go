@@ -1,6 +1,7 @@
 package deltago
 
 import (
+	"fmt"
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/internal/util/parquet"
 	"github.com/fraugster/parquet-go/floor/interfaces"
@@ -322,7 +323,15 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 		obj.AddField("userName").SetByteArray([]byte(*add.UserName))
 	}
 	obj.AddField("operation").SetByteArray([]byte(add.Operation))
-	parquet.MarshalMap(obj, "operationParameters", add.OperationParameters)
+	ops := make(map[string]string, len(add.OperationParameters))
+	for k, v := range add.OperationParameters {
+		if vs, ok := v.(string); !ok {
+			ops[k] = fmt.Sprintf("%v", v)
+		} else {
+			ops[k] = vs
+		}
+	}
+	parquet.MarshalMap(obj, "operationParameters", ops)
 	if add.ClusterId != nil {
 		obj.AddField("clusterId").SetByteArray([]byte(*add.ClusterId))
 	}
@@ -380,7 +389,13 @@ func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.Unmarshal
 	if err := parquet.UnmarshalString(g, "operation", func(s string) { add.Operation = s }); err != nil {
 		return err
 	}
-	if err := parquet.UnmarshalMap(g, "operationParameters", func(m map[string]string) { add.OperationParameters = m }); err != nil {
+	if err := parquet.UnmarshalMap(g, "operationParameters", func(m map[string]string) {
+		anyM := make(map[string]any, len(m))
+		for k, v := range m {
+			anyM[k] = v
+		}
+		add.OperationParameters = anyM
+	}); err != nil {
 		return err
 	}
 	if err := parquet.UnmarshalString(g, "clusterId", func(s string) { add.ClusterId = &s }); err != nil {

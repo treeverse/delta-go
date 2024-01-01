@@ -190,6 +190,10 @@ func (trx *optimisticTransactionImp) Commit(actionsIter iter.Iter[action.Action]
 	}
 	isBlindAppend := !dependsOnFiles && onlyAddFiles
 
+	opAny := make(map[string]any, len(op.Parameters))
+	for k, v := range op.Parameters {
+		opAny[k] = v
+	}
 	commandCtx := make(map[string]string)
 	commitInfo := &action.CommitInfo{
 		Version:             nil,
@@ -197,7 +201,7 @@ func (trx *optimisticTransactionImp) Commit(actionsIter iter.Iter[action.Action]
 		UserID:              nil,
 		UserName:            nil,
 		Operation:           op.Name.String(),
-		OperationParameters: op.Parameters,
+		OperationParameters: opAny,
 		Job:                 action.JobInfoFromContext(commandCtx),
 		Notebook:            action.NotebookInfoFromContext(commandCtx),
 		ClusterId:           util.OptionalToPtr(util.GetMapValueOptional(commandCtx, "clusterId")),
