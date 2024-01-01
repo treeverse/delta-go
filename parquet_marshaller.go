@@ -1,6 +1,7 @@
 package deltago
 
 import (
+	"fmt"
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/internal/util/parquet"
 	"github.com/fraugster/parquet-go/floor/interfaces"
@@ -322,7 +323,11 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 		obj.AddField("userName").SetByteArray([]byte(*add.UserName))
 	}
 	obj.AddField("operation").SetByteArray([]byte(add.Operation))
-	parquet.MarshalMap(obj, "operationParameters", add.OperationParameters)
+	ops := make(map[string]string, len(add.OperationParameters))
+	for k, v := range add.OperationParameters {
+		ops[k] = fmt.Sprint(v)
+	}
+	parquet.MarshalMap(obj, "operationParameters", ops)
 	if add.ClusterId != nil {
 		obj.AddField("clusterId").SetByteArray([]byte(*add.ClusterId))
 	}
@@ -359,6 +364,12 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 	return nil
 }
 
+// parquetUnmarshalCommitInfo
+// commitInfo isn't actually included in a checkpoint parquet file:
+// https://github.com/delta-io/delta/blob/master/connectors/standalone/src/main/scala/io/delta/standalone/internal/actions/actions.scala#L230
+// Holds provenance information about changes to the table. This [[Action]]
+// is not stored in the checkpoint and has reduced compatibility guarantees.
+// Information stored in it is best effort (i.e. can be falsified by the writer).
 func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.UnmarshalObject) error {
 	g, err := obj.GetField("commitInfo").Group()
 	if err != nil {
@@ -380,7 +391,13 @@ func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.Unmarshal
 	if err := parquet.UnmarshalString(g, "operation", func(s string) { add.Operation = s }); err != nil {
 		return err
 	}
-	if err := parquet.UnmarshalMap(g, "operationParameters", func(m map[string]string) { add.OperationParameters = m }); err != nil {
+	if err := parquet.UnmarshalMap(g, "operationParameters", func(m map[string]string) {
+		anyM := make(map[string]any, len(m))
+		for k, v := range m {
+			anyM[k] = v
+		}
+		add.OperationParameters = anyM
+	}); err != nil {
 		return err
 	}
 	if err := parquet.UnmarshalString(g, "clusterId", func(s string) { add.ClusterId = &s }); err != nil {

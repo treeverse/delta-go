@@ -6,7 +6,7 @@ import "github.com/samber/mo"
 
 type Operation struct {
 	Name           Name
-	Parameters     map[string]string
+	Parameters     map[string]any
 	UserParameters mo.Option[map[string]string]
 	UserMetadata   mo.Option[string]
 }
