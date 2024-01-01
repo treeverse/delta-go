@@ -364,13 +364,12 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 	return nil
 }
 
-/**
- * commitInfo isn't included in a checkpoint parquet file:
- * https://github.com/delta-io/delta/blob/master/connectors/standalone/src/main/scala/io/delta/standalone/internal/actions/actions.scala#L230
- * Holds provenance information about changes to the table. This [[Action]]
- * is not stored in the checkpoint and has reduced compatibility guarantees.
- * Information stored in it is best effort (i.e. can be falsified by the writer).
- */
+// parquetUnmarshalCommitInfo
+// commitInfo isn't actually included in a checkpoint parquet file:
+// https://github.com/delta-io/delta/blob/master/connectors/standalone/src/main/scala/io/delta/standalone/internal/actions/actions.scala#L230
+// Holds provenance information about changes to the table. This [[Action]]
+// is not stored in the checkpoint and has reduced compatibility guarantees.
+// Information stored in it is best effort (i.e. can be falsified by the writer).
 func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.UnmarshalObject) error {
 	g, err := obj.GetField("commitInfo").Group()
 	if err != nil {
