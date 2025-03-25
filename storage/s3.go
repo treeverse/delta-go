@@ -35,7 +35,8 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 
 // RegisterS3CompatBucketURLOpener is used to associate a scheme with a BucketURLOpener.
 // scheme is the URL scheme that will be used to identify the registered BucketURLOpener with a given URL.
-// awsProps specify common S3-compatible storage configurations.
+// awsProps specify common S3-compatible storage configurations. You can use it with the default global URLMux, or
+// you can create your own URLMux and provide it.
 // Example:
 //
 //		awsProps := AWSProperties{
@@ -49,7 +50,8 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 //				}, nil
 //			}),
 //		}
-//		RegisterS3CompatBucketURLOpener("myscheme", &awsProps)
+//		m := new(blob.URLMux)
+//		RegisterS3CompatBucketURLOpener("myscheme", &awsProps, m) // OR RegisterS3CompatBucketURLOpener("myscheme", &awsProps, nil)
 //
 //	 // 'blob.OpenBucket' uses the registered BucketURLOpener to retrieve a bucket client:
 //		b, err := blob.OpenBucket(context.Background(), "myscheme://my-bucket/some/path")
