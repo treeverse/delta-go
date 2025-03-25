@@ -14,14 +14,19 @@ import (
 	"github.com/csimplestring/delta-go/iter"
 )
 
-func NewFileLogStore(logDirUrl string) (*LocalStore, error) {
+func NewFileLogStore(logDirUrl string, m *blob.URLMux) (*LocalStore, error) {
 	// logDirUrl is like: file:///a/b/c
 	blobURL, err := path.ConvertToBlobURL(logDirUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	bucket, err := blob.OpenBucket(context.Background(), blobURL)
+	var bucket *blob.Bucket
+	if m == nil {
+		bucket, err = blob.OpenBucket(context.Background(), blobURL)
+	} else {
+		bucket, err = m.OpenBucket(context.Background(), blobURL)
+	}
 	if err != nil {
 		return nil, err
 	}

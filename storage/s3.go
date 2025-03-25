@@ -3,12 +3,13 @@ package storage
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
-	"net/url"
 )
 
 type AWSProperties struct {
@@ -34,7 +35,8 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 
 // RegisterS3CompatBucketURLOpener is used to associate a scheme with a BucketURLOpener.
 // scheme is the URL scheme that will be used to identify the registered BucketURLOpener with a given URL.
-// awsProps specify common S3-compatible storage configurations.
+// awsProps specify common S3-compatible storage configurations. You can use it with the default global URLMux, or
+// you can create your own URLMux and provide it.
 // Example:
 //
 //		awsProps := AWSProperties{
@@ -48,11 +50,12 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 //				}, nil
 //			}),
 //		}
-//		RegisterS3CompatBucketURLOpener("myscheme", &awsProps)
+//		m := new(blob.URLMux)
+//		RegisterS3CompatBucketURLOpener("myscheme", &awsProps, m) // OR RegisterS3CompatBucketURLOpener("myscheme", &awsProps, nil)
 //
 //	 // 'blob.OpenBucket' uses the registered BucketURLOpener to retrieve a bucket client:
 //		b, err := blob.OpenBucket(context.Background(), "myscheme://my-bucket/some/path")
-func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties) {
+func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties, m *blob.URLMux) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -64,7 +67,11 @@ func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties) {
 		cfg:      cfg,
 		awsProps: *awsProps,
 	}
-	blob.DefaultURLMux().RegisterBucket(scheme, &cbuo)
+	if m == nil {
+		blob.DefaultURLMux().RegisterBucket(scheme, &cbuo)
+	} else {
+		m.RegisterBucket(scheme, &cbuo)
+	}
 }
 
 func GenerateConfig(ctx context.Context, awsProps *AWSProperties) (aws.Config, error) {

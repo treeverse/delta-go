@@ -19,7 +19,7 @@ func TestS3LogStore(t *testing.T) {
 
 	path := "s3://golden/checkpoint/_delta_log/"
 
-	s, err := NewS3LogStore(path)
+	s, err := NewS3LogStore(path, nil)
 	assert.NoError(t, err)
 
 	data, err := s.Read("00000000000000000000.json")

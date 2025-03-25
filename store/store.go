@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"gocloud.dev/blob"
+
 	"github.com/csimplestring/delta-go/errno"
 	"github.com/csimplestring/delta-go/iter"
 	"github.com/rotisserie/eris"
@@ -72,23 +74,25 @@ func (f *FileMeta) Size() uint64 {
 	return f.size
 }
 
-func New(path string) (Store, error) {
-	p, err := url.Parse(path)
+func New(logPath string, m *blob.URLMux) (Store, error) {
+	p, err := url.Parse(logPath)
 	if err != nil {
-		return nil, eris.Wrapf(err, "error in parsing %s for Store", path)
+		return nil, eris.Wrapf(err, "error in parsing %s for Store", logPath)
 	}
 
 	if p.Scheme == "file" {
-		return NewFileLogStore(path)
+		return NewFileLogStore(logPath, m)
 	} else if p.Scheme == "azblob" {
-		return NewAzureBlobLogStore(path)
+		return NewAzureBlobLogStore(logPath, m)
 	} else if p.Scheme == "gs" {
-		return NewGCSLogStore(path)
+		return NewGCSLogStore(logPath, m)
 	} else if p.Scheme == "s3" {
-		return NewS3LogStore(path)
+		return NewS3LogStore(logPath, m)
+	} else if p.Scheme == "lakefs" {
+		return NewS3CompatLogStore(p, m)
 	}
 
-	return nil, errno.UnsupportedFileSystem("unsupported schema " + path + " to create log store")
+	return nil, errno.UnsupportedFileSystem("unsupported schema " + logPath + " to create log store")
 }
 
 func relativePath(scheme string, basePath string, path string) (string, error) {

@@ -172,7 +172,7 @@ func TestLocalParquetReadWrite(t *testing.T) {
 	err = w.Close()
 	assert.NoError(t, err)
 
-	r, err := newCheckpointReader(fmt.Sprintf("file://%s", dir))
+	r, err := newCheckpointReader(fmt.Sprintf("file://%s", dir), nil)
 	assert.NoError(t, err)
 
 	it, err := r.Read(path)

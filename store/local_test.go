@@ -17,7 +17,7 @@ func TestLocalStore(t *testing.T) {
 
 	absPath := fmt.Sprintf("file://%s/", p)
 
-	s, err := NewFileLogStore(absPath)
+	s, err := NewFileLogStore(absPath, nil)
 	assert.NoError(t, err)
 
 	// reading using absolute path

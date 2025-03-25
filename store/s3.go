@@ -2,11 +2,11 @@ package store
 
 import (
 	"context"
-	"github.com/csimplestring/delta-go/storage"
-	"gocloud.dev/blob"
 	"net/url"
 	"strings"
 	"sync"
+
+	"gocloud.dev/blob"
 
 	"github.com/csimplestring/delta-go/errno"
 	"github.com/csimplestring/delta-go/internal/util/path"
@@ -17,16 +17,18 @@ import (
 // Note: currently s3 log store only supports single driver.
 // TODO: support multi-drivers writes
 // see https://delta.io/blog/2022-05-18-multi-cluster-writes-to-delta-lake-storage-in-s3/
-func NewS3LogStore(logDir string) (*S3SingleDriverLogStore, error) {
+func NewS3LogStore(logDir string, m *blob.URLMux) (*S3SingleDriverLogStore, error) {
 	// logDir is like: s3:///a/b/c/_delta_log/, must end with "/"
 	blobURL, err := path.ConvertToBlobURL(logDir)
 	if err != nil {
 		return nil, err
 	}
 
-	bucket, err := blob.OpenBucket(context.Background(), blobURL)
-	if err != nil {
-		return nil, err
+	var bucket *blob.Bucket
+	if m == nil {
+		bucket, err = blob.OpenBucket(context.Background(), blobURL)
+	} else {
+		bucket, err = m.OpenBucket(context.Background(), blobURL)
 	}
 
 	logDir = strings.TrimPrefix(logDir, "s3://")
@@ -47,22 +49,19 @@ func NewS3LogStore(logDir string) (*S3SingleDriverLogStore, error) {
 	}, nil
 }
 
-func NewS3CompatLogStore(awsProps *storage.AWSProperties, u *url.URL) (*S3SingleDriverLogStore, error) {
-	ctx := context.Background()
-	cfg, err := storage.GenerateConfig(ctx, awsProps)
-	if err != nil {
-		return nil, err
+func NewS3CompatLogStore(u *url.URL, m *blob.URLMux) (*S3SingleDriverLogStore, error) {
+	var bucket *blob.Bucket
+	var err error
+	if m == nil {
+		bucket, err = blob.OpenBucket(context.Background(), u.String())
+	} else {
+		bucket, err = m.OpenBucket(context.Background(), u.String())
 	}
-	bucketOpener := storage.NewS3CompatBucketURLOpener(cfg, *awsProps)
-	bucket, err := bucketOpener.OpenBucketURL(ctx, u)
 	if err != nil {
 		return nil, err
 	}
 	logDir := handleLogDirPath(u.Path)
 	bucket = blob.PrefixedBucket(bucket, logDir)
-	if err != nil {
-		return nil, err
-	}
 	s := &baseStore{
 		logDir: logDir,
 		bucket: bucket,

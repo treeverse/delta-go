@@ -5,6 +5,8 @@ import (
 	"strings"
 	"sync"
 
+	"gocloud.dev/blob"
+
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/errno"
 	"github.com/csimplestring/delta-go/internal/util/filenames"
@@ -57,28 +59,25 @@ func getLogPath(dataPath string) string {
 	return logPath
 }
 
-// ForTableWithStore Create a DeltaLog instance representing the table located at the provided path using the provided
-// logStore (or initializing a new one if not provided).
-func ForTableWithStore(dataPath string, config Config, clock Clock, ls *store.Store) (Log, error) {
+// ForTableWithMux creates a DeltaLog instance representing the table located at the provided path using a given Mux.
+func ForTableWithMux(dataPath string, config Config, clock Clock, m *blob.URLMux) (Log, error) {
 	logPath := getLogPath(dataPath)
 
 	deltaLogLock := &sync.Mutex{}
-	var logStore = ls
-	if logStore == nil {
-		s, err := store.New(logPath)
-		logStore = &s
-		if err != nil {
-			return nil, err
-		}
-	}
+	var logStore store.Store
 
-	parquetReader, err := newCheckpointReader(logPath)
+	logStore, err := store.New(logPath, m)
 	if err != nil {
 		return nil, err
 	}
 
-	historyManager := &historyManager{logStore: *logStore}
-	snaptshotManager, err := newSnapshotReader(config, parquetReader, *logStore, clock, historyManager, deltaLogLock)
+	parquetReader, err := newCheckpointReader(logPath, m)
+	if err != nil {
+		return nil, err
+	}
+
+	historyManager := &historyManager{logStore: logStore}
+	snaptshotManager, err := newSnapshotReader(config, parquetReader, logStore, clock, historyManager, deltaLogLock)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +86,7 @@ func ForTableWithStore(dataPath string, config Config, clock Clock, ls *store.St
 		dataPath:         dataPath,
 		logPath:          logPath,
 		clock:            clock,
-		store:            *logStore,
+		store:            logStore,
 		deltaLogLock:     deltaLogLock,
 		history:          historyManager,
 		snapshotReader:   snaptshotManager,
@@ -104,12 +103,12 @@ func ForTable(dataPath string, config Config, clock Clock) (Log, error) {
 	deltaLogLock := &sync.Mutex{}
 	var logStore store.Store
 
-	logStore, err := store.New(logPath)
+	logStore, err := store.New(logPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	parquetReader, err := newCheckpointReader(logPath)
+	parquetReader, err := newCheckpointReader(logPath, nil)
 	if err != nil {
 		return nil, err
 	}
