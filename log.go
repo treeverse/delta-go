@@ -1,10 +1,11 @@
 package deltago
 
 import (
-	"gocloud.dev/blob"
 	"io"
 	"strings"
 	"sync"
+
+	"gocloud.dev/blob"
 
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/errno"

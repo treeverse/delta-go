@@ -3,12 +3,13 @@ package storage
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
-	"net/url"
 )
 
 type AWSProperties struct {

@@ -2,10 +2,11 @@ package store
 
 import (
 	"context"
-	"gocloud.dev/blob"
 	"net/url"
 	"strings"
 	"sync"
+
+	"gocloud.dev/blob"
 
 	"github.com/csimplestring/delta-go/errno"
 	"github.com/csimplestring/delta-go/internal/util/path"

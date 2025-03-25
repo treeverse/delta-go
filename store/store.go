@@ -1,11 +1,12 @@
 package store
 
 import (
-	"gocloud.dev/blob"
 	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"gocloud.dev/blob"
 
 	"github.com/csimplestring/delta-go/errno"
 	"github.com/csimplestring/delta-go/iter"
