@@ -14,11 +14,6 @@ import (
 	"github.com/rotisserie/eris"
 )
 
-var (
-	errMissingLogStore = eris.New("missing log store")
-	errMissingURLMux   = eris.New("missing URLMux")
-)
-
 // Log Represents the transaction logs of a Delta table.
 // It provides APIs to access the states of a Delta table.
 type Log interface {
