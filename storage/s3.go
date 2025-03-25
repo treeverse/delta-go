@@ -52,7 +52,7 @@ func (cbuo S3CompatBucketURLOpener) OpenBucketURL(ctx context.Context, u *url.UR
 //
 //	 // 'blob.OpenBucket' uses the registered BucketURLOpener to retrieve a bucket client:
 //		b, err := blob.OpenBucket(context.Background(), "myscheme://my-bucket/some/path")
-func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties) {
+func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties, m *blob.URLMux) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -64,7 +64,11 @@ func RegisterS3CompatBucketURLOpener(scheme string, awsProps *AWSProperties) {
 		cfg:      cfg,
 		awsProps: *awsProps,
 	}
-	blob.DefaultURLMux().RegisterBucket(scheme, &cbuo)
+	if m == nil {
+		blob.DefaultURLMux().RegisterBucket(scheme, &cbuo)
+	} else {
+		m.RegisterBucket(scheme, &cbuo)
+	}
 }
 
 func GenerateConfig(ctx context.Context, awsProps *AWSProperties) (aws.Config, error) {
