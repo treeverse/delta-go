@@ -14,16 +14,18 @@ import (
 	"gocloud.dev/gcerrors"
 )
 
-func NewGCSLogStore(logDir string) (*GCSLogStore, error) {
+func NewGCSLogStore(logDir string, m *goblob.URLMux) (*GCSLogStore, error) {
 	// logDir is like: gs:///a/b/c/_delta_log/, must end with "/"
 	blobURL, err := path.ConvertToBlobURL(logDir)
 	if err != nil {
 		return nil, err
 	}
 
-	bucket, err := goblob.OpenBucket(context.Background(), blobURL)
-	if err != nil {
-		return nil, err
+	var bucket *goblob.Bucket
+	if m == nil {
+		bucket, err = goblob.OpenBucket(context.Background(), blobURL)
+	} else {
+		bucket, err = m.OpenBucket(context.Background(), blobURL)
 	}
 
 	logDir = strings.TrimPrefix(logDir, "gs://")

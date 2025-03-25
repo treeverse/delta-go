@@ -15,7 +15,7 @@ func TestGCSBlobLogStore(t *testing.T) {
 
 	path := "gs://golden/checkpoint/_delta_log/"
 
-	s, err := NewGCSLogStore(path)
+	s, err := NewGCSLogStore(path, nil)
 	assert.NoError(t, err)
 
 	data, err := s.Read("00000000000000000000.json")

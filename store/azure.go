@@ -17,14 +17,19 @@ import (
 	_ "gocloud.dev/blob/azureblob"
 )
 
-func NewAzureBlobLogStore(logDir string) (*AzureBlobLogStore, error) {
+func NewAzureBlobLogStore(logDir string, m *goblob.URLMux) (*AzureBlobLogStore, error) {
 	// logDir is like: azblob:///a/b/c/_delta_log/, must end with /
 	blobURL, err := path.ConvertToBlobURL(logDir)
 	if err != nil {
 		return nil, err
 	}
 
-	bucket, err := goblob.OpenBucket(context.Background(), blobURL)
+	var bucket *goblob.Bucket
+	if m == nil {
+		bucket, err = goblob.OpenBucket(context.Background(), blobURL)
+	} else {
+		bucket, err = m.OpenBucket(context.Background(), blobURL)
+	}
 	if err != nil {
 		return nil, err
 	}
