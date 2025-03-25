@@ -31,6 +31,10 @@ func NewS3LogStore(logDir string, m *blob.URLMux) (*S3SingleDriverLogStore, erro
 		bucket, err = m.OpenBucket(context.Background(), blobURL)
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	logDir = strings.TrimPrefix(logDir, "s3://")
 	s := &baseStore{
 		logDir: logDir,
