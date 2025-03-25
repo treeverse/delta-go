@@ -19,15 +19,17 @@ type checkpointReader interface {
 	Read(path string) (iter.Iter[action.Action], error)
 }
 
-func newCheckpointReader(urlstr string) (checkpointReader, error) {
+func newCheckpointReader(urlstr string, m *blob.URLMux) (checkpointReader, error) {
 	blobURL, err := path.ConvertToBlobURL(urlstr)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := blob.OpenBucket(context.Background(), blobURL)
-	if err != nil {
-		return nil, err
+	var b *blob.Bucket
+	if m == nil {
+		b, err = blob.OpenBucket(context.Background(), blobURL)
+	} else {
+		b, err = m.OpenBucket(context.Background(), blobURL)
 	}
 
 	return &defaultCheckpointReader{
