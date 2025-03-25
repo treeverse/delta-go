@@ -32,6 +32,10 @@ func newCheckpointReader(urlstr string, m *blob.URLMux) (checkpointReader, error
 		b, err = m.OpenBucket(context.Background(), blobURL)
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	return &defaultCheckpointReader{
 		bucket: b,
 	}, nil
