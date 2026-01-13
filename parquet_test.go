@@ -142,7 +142,7 @@ func TestLocalParquetReadWrite(t *testing.T) {
 				UserID:              util.PtrOf("u1"),
 				UserName:            util.PtrOf("u1"),
 				Operation:           "1",
-				OperationParameters: map[string]string{"a": "b"},
+				OperationParameters: map[string]any{"a": "b"},
 				Job: &action.JobInfo{
 					JobID:       "1",
 					JobName:     "string",
