@@ -29,12 +29,7 @@ func FromJson(s string) (Action, error) {
 		return nil, errno.JsonUnmarshalError(err)
 	}
 
-	a := action.Unwrap()
-	if a == nil {
-		// Preserve unknown actions so callers can round-trip logs.
-		return &UnknownAction{raw: s}, nil
-	}
-	return a, nil
+	return action.Unwrap(), nil
 }
 
 func jsonString(a Action) (string, error) {
@@ -61,8 +56,6 @@ type SingleAction struct {
 	Remove     *RemoveFile     `json:"remove,omitempty"`
 	MetaData   *Metadata       `json:"metaData,omitempty"`
 	Protocol   *Protocol       `json:"protocol,omitempty"`
-	// Newer Delta protocol actions (e.g. used by row tracking / other table features).
-	DomainMetadata *DomainMetadata `json:"domainMetadata,omitempty"`
 	Cdc        *AddCDCFile     `json:"cdc,omitempty"`
 	CommitInfo *CommitInfo     `json:"commitInfo,omitempty"`
 }
@@ -78,8 +71,6 @@ func (s *SingleAction) Unwrap() Action {
 		return s.Txn
 	} else if s.Protocol != nil {
 		return s.Protocol
-	} else if s.DomainMetadata != nil {
-		return s.DomainMetadata
 	} else if s.Cdc != nil {
 		return s.Cdc
 	} else if s.CommitInfo != nil {
