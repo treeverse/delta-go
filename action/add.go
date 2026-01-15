@@ -15,6 +15,10 @@ type AddFile struct {
 	ModificationTime int64             `json:"modificationTime"`
 	Stats            string            `json:"stats,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
+
+	// Protocol 3/7 fields for row tracking (passthrough only)
+	BaseRowId               *int64 `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }
 
 func (a *AddFile) IsDataChanged() bool {
