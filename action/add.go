@@ -43,10 +43,12 @@ func (a *AddFile) Remove() *RemoveFile {
 
 func (a *AddFile) RemoveWithTimestamp(ts *int64, dataChange *bool) *RemoveFile {
 	if ts == nil {
-		*ts = time.Now().UnixMilli()
+		now := time.Now().UnixMilli()
+		ts = &now
 	}
 	if dataChange == nil {
-		*dataChange = true
+		dc := true
+		dataChange = &dc
 	}
 
 	return &RemoveFile{
