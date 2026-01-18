@@ -16,9 +16,11 @@ type AddFile struct {
 	Stats            string            `json:"stats,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
 
-	// Protocol 3/7 fields for row tracking (passthrough only)
-	BaseRowId               *int64 `json:"baseRowId,omitempty"`
-	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
+	// Protocol 3/7 fields
+	DeletionVector          *DeletionVector `json:"deletionVector,omitempty"`
+	BaseRowId               *int64          `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64          `json:"defaultRowCommitVersion,omitempty"`
+	ClusteringProvider      *string         `json:"clusteringProvider,omitempty"`
 }
 
 func (a *AddFile) IsDataChanged() bool {

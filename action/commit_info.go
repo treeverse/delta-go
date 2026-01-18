@@ -27,6 +27,7 @@ type CommitInfo struct {
 	UserMetadata        *string           `json:"userMetadata,omitempty"`
 	EngineInfo          *string           `json:"engineInfo,omitempty"`
 	TxnId               *string           `json:"txnId,omitempty"` // Transaction ID for idempotency
+	InCommitTimestamp   *int64            `json:"inCommitTimestamp,omitempty"`
 }
 
 func (c *CommitInfo) Wrap() *SingleAction {
