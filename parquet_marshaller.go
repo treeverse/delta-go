@@ -2,6 +2,7 @@ package deltago
 
 import (
 	"fmt"
+
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/internal/util/parquet"
 	"github.com/fraugster/parquet-go/floor/interfaces"

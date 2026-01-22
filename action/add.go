@@ -15,6 +15,12 @@ type AddFile struct {
 	ModificationTime int64             `json:"modificationTime"`
 	Stats            string            `json:"stats,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
+
+	// Protocol 3/7 fields
+	DeletionVector          *DeletionVector `json:"deletionVector,omitempty"`
+	BaseRowId               *int64          `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64          `json:"defaultRowCommitVersion,omitempty"`
+	ClusteringProvider      *string         `json:"clusteringProvider,omitempty"`
 }
 
 func (a *AddFile) IsDataChanged() bool {
@@ -39,10 +45,12 @@ func (a *AddFile) Remove() *RemoveFile {
 
 func (a *AddFile) RemoveWithTimestamp(ts *int64, dataChange *bool) *RemoveFile {
 	if ts == nil {
-		*ts = time.Now().UnixMilli()
+		now := time.Now().UnixMilli()
+		ts = &now
 	}
 	if dataChange == nil {
-		*dataChange = true
+		dc := true
+		dataChange = &dc
 	}
 
 	return &RemoveFile{

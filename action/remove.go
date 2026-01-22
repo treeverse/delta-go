@@ -14,6 +14,20 @@ type RemoveFile struct {
 	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
+
+	// Protocol 3/7 fields
+	DeletionVector          *DeletionVector `json:"deletionVector,omitempty"`
+	BaseRowId               *int64          `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64          `json:"defaultRowCommitVersion,omitempty"`
+}
+
+// DeletionVector represents a deletion vector for efficient soft deletes
+type DeletionVector struct {
+	StorageType    string `json:"storageType"`
+	PathOrInlineDv string `json:"pathOrInlineDv"`
+	Offset         *int   `json:"offset,omitempty"`
+	SizeInBytes    int    `json:"sizeInBytes"`
+	Cardinality    int64  `json:"cardinality"`
 }
 
 func (r *RemoveFile) IsDataChanged() bool {

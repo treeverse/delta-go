@@ -1,6 +1,9 @@
 package deltago
 
 import (
+	"fmt"
+	"sort"
+
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/iter"
 	"github.com/csimplestring/delta-go/store"
@@ -82,6 +85,9 @@ func (m *MemOptimizedCheckpoint) Version() int64 {
 }
 
 func (m *MemOptimizedCheckpoint) Actions() ([]action.Action, error) {
+	if m.cr == nil {
+		return nil, fmt.Errorf("checkpoint reader is nil - checkpoint functionality not available")
+	}
 	cr := *(m.cr)
 	i, err := cr.Read(m.path)
 	if err != nil {
@@ -89,7 +95,7 @@ func (m *MemOptimizedCheckpoint) Actions() ([]action.Action, error) {
 	}
 	defer i.Close()
 
-	return iter.Map(i, func(a action.Action) (action.Action, error) {
+	actions, err := iter.Map(i, func(a action.Action) (action.Action, error) {
 		if a.Wrap().MetaData != nil {
 			md := a.Wrap().MetaData
 			if md.Configuration == nil {
@@ -104,6 +110,33 @@ func (m *MemOptimizedCheckpoint) Actions() ([]action.Action, error) {
 		}
 		return a, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	sort.SliceStable(actions, func(i, j int) bool {
+		_, iIsProtocol := actions[i].(*action.Protocol)
+		_, jIsProtocol := actions[j].(*action.Protocol)
+		if iIsProtocol && !jIsProtocol {
+			return true
+		}
+		if !iIsProtocol && jIsProtocol {
+			return false
+		}
+
+		_, iIsMetadata := actions[i].(*action.Metadata)
+		_, jIsMetadata := actions[j].(*action.Metadata)
+		if iIsMetadata && !jIsMetadata {
+			return true
+		}
+		if !iIsMetadata && jIsMetadata {
+			return false
+		}
+
+		return false
+	})
+
+	return actions, nil
 }
 
 func (m *MemOptimizedCheckpoint) ActionIter() (iter.Iter[action.Action], error) {
