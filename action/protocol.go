@@ -1,5 +1,7 @@
 package action
 
+import "slices"
+
 type Protocol struct {
 	MinReaderVersion int32    `json:"minReaderVersion"`
 	MinWriterVersion int32    `json:"minWriterVersion"`
@@ -21,8 +23,8 @@ func (p *Protocol) Equals(other *Protocol) bool {
 	}
 	return p.MinReaderVersion == other.MinReaderVersion &&
 		p.MinWriterVersion == other.MinWriterVersion &&
-		stringSlicesEqual(p.ReaderFeatures, other.ReaderFeatures) &&
-		stringSlicesEqual(p.WriterFeatures, other.WriterFeatures)
+		slices.Equal(p.ReaderFeatures, other.ReaderFeatures) &&
+		slices.Equal(p.WriterFeatures, other.WriterFeatures)
 }
 
 func DefaultProtocol() *Protocol {
@@ -30,16 +32,4 @@ func DefaultProtocol() *Protocol {
 		MinReaderVersion: 1,
 		MinWriterVersion: 2,
 	}
-}
-
-func stringSlicesEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

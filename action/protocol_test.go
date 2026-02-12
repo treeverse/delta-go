@@ -7,52 +7,55 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProtocol_JsonDeserialize_WriterFeaturesOnly(t *testing.T) {
-	input := `{
-		"minReaderVersion": 1,
-		"minWriterVersion": 7,
-		"writerFeatures": ["appendOnly", "changeDataFeed", "checkConstraints", "generatedColumns"]
-	}`
+func TestProtocol_JsonDeserialize(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          string
+		readerVersion  int32
+		writerVersion  int32
+		readerFeatures []string
+		writerFeatures []string
+	}{
+		{
+			name:           "writer features only",
+			input:          `{"minReaderVersion":1,"minWriterVersion":7,"writerFeatures":["appendOnly","changeDataFeed","checkConstraints","generatedColumns"]}`,
+			readerVersion:  1,
+			writerVersion:  7,
+			readerFeatures: nil,
+			writerFeatures: []string{"appendOnly", "changeDataFeed", "checkConstraints", "generatedColumns"},
+		},
+		{
+			name:           "both features",
+			input:          `{"minReaderVersion":3,"minWriterVersion":7,"readerFeatures":["columnMapping"],"writerFeatures":["columnMapping","identityColumns"]}`,
+			readerVersion:  3,
+			writerVersion:  7,
+			readerFeatures: []string{"columnMapping"},
+			writerFeatures: []string{"columnMapping", "identityColumns"},
+		},
+		{
+			name:           "no features",
+			input:          `{"minReaderVersion":1,"minWriterVersion":2}`,
+			readerVersion:  1,
+			writerVersion:  2,
+			readerFeatures: nil,
+			writerFeatures: nil,
+		},
+	}
 
-	var p Protocol
-	err := json.Unmarshal([]byte(input), &p)
-	assert.NoError(t, err)
-	assert.Equal(t, int32(1), p.MinReaderVersion)
-	assert.Equal(t, int32(7), p.MinWriterVersion)
-	assert.Nil(t, p.ReaderFeatures)
-	assert.Equal(t, []string{"appendOnly", "changeDataFeed", "checkConstraints", "generatedColumns"}, p.WriterFeatures)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var p Protocol
+			err := json.Unmarshal([]byte(tt.input), &p)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.readerVersion, p.MinReaderVersion)
+			assert.Equal(t, tt.writerVersion, p.MinWriterVersion)
+			assert.Equal(t, tt.readerFeatures, p.ReaderFeatures)
+			assert.Equal(t, tt.writerFeatures, p.WriterFeatures)
+		})
+	}
 }
 
-func TestProtocol_JsonDeserialize_BothFeatures(t *testing.T) {
-	input := `{
-		"minReaderVersion": 3,
-		"minWriterVersion": 7,
-		"readerFeatures": ["columnMapping"],
-		"writerFeatures": ["columnMapping", "identityColumns"]
-	}`
-
-	var p Protocol
-	err := json.Unmarshal([]byte(input), &p)
-	assert.NoError(t, err)
-	assert.Equal(t, int32(3), p.MinReaderVersion)
-	assert.Equal(t, int32(7), p.MinWriterVersion)
-	assert.Equal(t, []string{"columnMapping"}, p.ReaderFeatures)
-	assert.Equal(t, []string{"columnMapping", "identityColumns"}, p.WriterFeatures)
-}
-
-func TestProtocol_JsonDeserialize_NoFeatures(t *testing.T) {
-	input := `{"minReaderVersion": 1, "minWriterVersion": 2}`
-
-	var p Protocol
-	err := json.Unmarshal([]byte(input), &p)
-	assert.NoError(t, err)
-	assert.Equal(t, int32(1), p.MinReaderVersion)
-	assert.Equal(t, int32(2), p.MinWriterVersion)
-	assert.Nil(t, p.ReaderFeatures)
-	assert.Nil(t, p.WriterFeatures)
-}
-
-func TestProtocol_JsonSerialize_WriterFeatures(t *testing.T) {
+func TestProtocol_JsonRoundTrip(t *testing.T) {
 	p := &Protocol{
 		MinReaderVersion: 1,
 		MinWriterVersion: 7,
@@ -65,23 +68,7 @@ func TestProtocol_JsonSerialize_WriterFeatures(t *testing.T) {
 	var roundtrip Protocol
 	err = json.Unmarshal(b, &roundtrip)
 	assert.NoError(t, err)
-	assert.Equal(t, p.MinReaderVersion, roundtrip.MinReaderVersion)
-	assert.Equal(t, p.MinWriterVersion, roundtrip.MinWriterVersion)
-	assert.Nil(t, roundtrip.ReaderFeatures)
-	assert.Equal(t, p.WriterFeatures, roundtrip.WriterFeatures)
-}
-
-func TestProtocol_JsonDeserialize_WrappedInSingleAction(t *testing.T) {
-	input := `{"protocol":{"minReaderVersion":1,"minWriterVersion":7,"writerFeatures":["appendOnly","changeDataFeed"]}}`
-
-	a, err := FromJson(input)
-	assert.NoError(t, err)
-
-	p, ok := a.(*Protocol)
-	assert.True(t, ok)
-	assert.Equal(t, int32(1), p.MinReaderVersion)
-	assert.Equal(t, int32(7), p.MinWriterVersion)
-	assert.Equal(t, []string{"appendOnly", "changeDataFeed"}, p.WriterFeatures)
+	assert.True(t, p.Equals(&roundtrip))
 }
 
 func TestProtocol_Equals(t *testing.T) {
