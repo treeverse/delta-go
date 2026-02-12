@@ -129,6 +129,21 @@ func TestLocalParquetReadWrite(t *testing.T) {
 			},
 		},
 		{
+			Protocol: &action.Protocol{
+				MinReaderVersion: 1,
+				MinWriterVersion: 7,
+				WriterFeatures:   []string{"appendOnly", "changeDataFeed", "checkConstraints", "generatedColumns"},
+			},
+		},
+		{
+			Protocol: &action.Protocol{
+				MinReaderVersion: 3,
+				MinWriterVersion: 7,
+				ReaderFeatures:   []string{"columnMapping"},
+				WriterFeatures:   []string{"columnMapping", "identityColumns"},
+			},
+		},
+		{
 			Cdc: &action.AddCDCFile{
 				Path:            "1",
 				PartitionValues: map[string]string{"a": "b"},
@@ -142,7 +157,7 @@ func TestLocalParquetReadWrite(t *testing.T) {
 				UserID:              util.PtrOf("u1"),
 				UserName:            util.PtrOf("u1"),
 				Operation:           "1",
-				OperationParameters: map[string]string{"a": "b"},
+				OperationParameters: map[string]any{"a": "b"},
 				Job: &action.JobInfo{
 					JobID:       "1",
 					JobName:     "string",

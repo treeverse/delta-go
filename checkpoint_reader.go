@@ -166,6 +166,16 @@ message SingleAction {
 	optional group protocol {
 	  required int32 minReaderVersion;
 	  required int32 minWriterVersion;
+	  optional group readerFeatures (LIST) {
+		repeated group list {
+		  optional binary element (STRING);
+		}
+	  }
+	  optional group writerFeatures (LIST) {
+		repeated group list {
+		  optional binary element (STRING);
+		}
+	  }
 	}
 	optional group cdc {
 	  required binary path (STRING);

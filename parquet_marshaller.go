@@ -261,6 +261,18 @@ func parquetUnmarshalMetadata(meta *action.Metadata, obj interfaces.UnmarshalObj
 func parquetMarshaProtocol(p *action.Protocol, obj interfaces.MarshalObject) error {
 	obj.AddField("minReaderVersion").SetInt32(p.MinReaderVersion)
 	obj.AddField("minWriterVersion").SetInt32(p.MinWriterVersion)
+	if p.ReaderFeatures != nil {
+		l := obj.AddField("readerFeatures").List()
+		for _, f := range p.ReaderFeatures {
+			l.Add().SetByteArray([]byte(f))
+		}
+	}
+	if p.WriterFeatures != nil {
+		l := obj.AddField("writerFeatures").List()
+		for _, f := range p.WriterFeatures {
+			l.Add().SetByteArray([]byte(f))
+		}
+	}
 	return nil
 }
 
@@ -273,6 +285,12 @@ func parquetUnmarshaProtocol(p *action.Protocol, obj interfaces.UnmarshalObject)
 		return err
 	}
 	if err := parquet.UnmarshalInt32(g, "minWriterVersion", func(s int32) { p.MinWriterVersion = s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalList(g, "readerFeatures", func(s []string) { p.ReaderFeatures = s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalList(g, "writerFeatures", func(s []string) { p.WriterFeatures = s }); err != nil {
 		return err
 	}
 	return nil
