@@ -14,6 +14,11 @@ type RemoveFile struct {
 	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
+
+	// Row tracking fields — mirrored from the corresponding AddFile so that
+	// downstream CDF consumers can correlate removed rows back to their stable IDs.
+	BaseRowId               *int64 `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }
 
 func (r *RemoveFile) IsDataChanged() bool {

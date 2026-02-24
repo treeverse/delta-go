@@ -15,6 +15,13 @@ type AddFile struct {
 	ModificationTime int64             `json:"modificationTime"`
 	Stats            string            `json:"stats,omitempty"`
 	Tags             map[string]string `json:"tags,omitempty"`
+
+	// Row tracking fields (writerFeature "rowTracking").
+	// BaseRowId is the first row ID assigned to rows in this file.
+	// DefaultRowCommitVersion is the commit version when this file was first written;
+	// used as a fallback row ID source for files written before row tracking was enabled.
+	BaseRowId               *int64 `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }
 
 func (a *AddFile) IsDataChanged() bool {
