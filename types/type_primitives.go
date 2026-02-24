@@ -98,3 +98,12 @@ type TimestampType struct {
 func (t *TimestampType) Name() string {
 	return "timestamp"
 }
+
+// VariantType represents the Delta "variant" semi-structured data type
+// (reader feature "variantType"). Values are stored as binary-encoded
+// structs in Parquet; delta-go never decodes the content.
+type VariantType struct{}
+
+func (v *VariantType) Name() string {
+	return "variant"
+}

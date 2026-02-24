@@ -13,6 +13,7 @@ import (
 var nonDecimalTypes []DataType = []DataType{
 	&BinaryType{}, &BooleanType{}, &ByteType{}, &DateType{}, &DoubleType{},
 	&FloatType{}, &IntegerType{}, &LongType{}, &NullType{}, &ShortType{}, &StringType{}, &TimestampType{},
+	&VariantType{},
 }
 
 var nonDecimalNameToType map[string]DataType = make(map[string]DataType)
