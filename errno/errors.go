@@ -51,6 +51,10 @@ func InvalidProtocolVersionError() error {
 	return eris.New("invalid protocol version")
 }
 
+func UnsupportedReaderFeatureError(feature string) error {
+	return eris.New(fmt.Sprintf("unsupported reader feature: %s", feature))
+}
+
 func IllegalStateError(msg string) error {
 	return eris.Wrap(ErrIllegalState, msg)
 }

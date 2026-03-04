@@ -242,9 +242,36 @@ func (c *conflictChecker) checkForUpdatedApplicationTransactionIdsThatCurrentTxn
 	return nil
 }
 
+// supportedReaderFeatures lists the reader features the exporter can handle correctly.
+// For protocol 3/7 tables, we check the explicit readerFeatures list instead of the
+// version number — a table with minReaderVersion=3 but empty readerFeatures is safe
+// to read (e.g. after DROP FEATURE deletionVectors where minReaderVersion stays at 3).
+var supportedReaderFeatures = map[string]bool{
+	"timestampNtz":         true,
+	"typeWidening":         true,
+	"typeWidening-preview": true,
+	"variantType":          true,
+	"rowTracking":          true,
+}
+
 func assertProtocolRead(protocol *action.Protocol) error {
-	if protocol != nil && action.ReaderVersion < protocol.MinReaderVersion {
-		return errno.InvalidProtocolVersionError()
+	if protocol == nil {
+		return nil
+	}
+	// Legacy protocol (pre table-features): use version number as before.
+	if protocol.MinReaderVersion < 3 {
+		if action.ReaderVersion < protocol.MinReaderVersion {
+			return errno.InvalidProtocolVersionError()
+		}
+		return nil
+	}
+	// Protocol 3/7 (table features mode): check the explicit readerFeatures list.
+	// The version number alone is not sufficient — a table may have minReaderVersion=3
+	// with an empty readerFeatures list (e.g. after DROP FEATURE deletionVectors).
+	for _, feature := range protocol.ReaderFeatures {
+		if !supportedReaderFeatures[feature] {
+			return errno.UnsupportedReaderFeatureError(feature)
+		}
 	}
 	return nil
 }
