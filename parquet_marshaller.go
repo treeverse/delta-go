@@ -34,6 +34,9 @@ func (p *actionMarshaller) MarshalParquet(obj interfaces.MarshalObject) error {
 	if p.a.CommitInfo != nil {
 		return parquetMarshalCommitInfo(p.a.CommitInfo, obj.AddField("commitInfo").Group())
 	}
+	if p.a.DomainMetadata != nil {
+		return parquetMarshalDomainMetadata(p.a.DomainMetadata, obj.AddField("domainMetadata").Group())
+	}
 
 	return nil
 }
@@ -67,6 +70,10 @@ func (p *actionMarshaller) UnmarshalParquet(obj interfaces.UnmarshalObject) erro
 	if _, ok := data["commitInfo"]; ok {
 		p.a.CommitInfo = &action.CommitInfo{}
 		return parquetUnmarshalCommitInfo(p.a.CommitInfo, obj)
+	}
+	if _, ok := data["domainMetadata"]; ok {
+		p.a.DomainMetadata = &action.DomainMetadata{}
+		return parquetUnmarshalDomainMetadata(p.a.DomainMetadata, obj)
 	}
 	return nil
 }
@@ -118,6 +125,12 @@ func parquetMarshalAdd(add *action.AddFile, obj interfaces.MarshalObject) error 
 	if len(add.Tags) > 0 {
 		parquet.MarshalMap(obj, "tags", add.Tags)
 	}
+	if add.BaseRowId != nil {
+		obj.AddField("baseRowId").SetInt64(*add.BaseRowId)
+	}
+	if add.DefaultRowCommitVersion != nil {
+		obj.AddField("defaultRowCommitVersion").SetInt64(*add.DefaultRowCommitVersion)
+	}
 	return nil
 }
 
@@ -146,6 +159,12 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 		return err
 	}
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { add.Tags = m }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalInt64(g, "baseRowId", func(s int64) { add.BaseRowId = &s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalInt64(g, "defaultRowCommitVersion", func(s int64) { add.DefaultRowCommitVersion = &s }); err != nil {
 		return err
 	}
 
@@ -474,5 +493,29 @@ func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.Unmarshal
 		}
 	}
 
+	return nil
+}
+
+func parquetMarshalDomainMetadata(dm *action.DomainMetadata, obj interfaces.MarshalObject) error {
+	obj.AddField("domain").SetByteArray([]byte(dm.Domain))
+	obj.AddField("configuration").SetByteArray([]byte(dm.Configuration))
+	obj.AddField("removed").SetBool(dm.Removed)
+	return nil
+}
+
+func parquetUnmarshalDomainMetadata(dm *action.DomainMetadata, obj interfaces.UnmarshalObject) error {
+	g, err := obj.GetField("domainMetadata").Group()
+	if err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalString(g, "domain", func(s string) { dm.Domain = s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalString(g, "configuration", func(s string) { dm.Configuration = s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalBool(g, "removed", func(s bool) { dm.Removed = s }); err != nil {
+		return err
+	}
 	return nil
 }

@@ -51,13 +51,14 @@ func CheckMetadataProtocolProperties(metadata *Metadata, protocol *Protocol) err
 }
 
 type SingleAction struct {
-	Txn        *SetTransaction `json:"txn,omitempty"`
-	Add        *AddFile        `json:"add,omitempty"`
-	Remove     *RemoveFile     `json:"remove,omitempty"`
-	MetaData   *Metadata       `json:"metaData,omitempty"`
-	Protocol   *Protocol       `json:"protocol,omitempty"`
-	Cdc        *AddCDCFile     `json:"cdc,omitempty"`
-	CommitInfo *CommitInfo     `json:"commitInfo,omitempty"`
+	Txn            *SetTransaction `json:"txn,omitempty"`
+	Add            *AddFile        `json:"add,omitempty"`
+	Remove         *RemoveFile     `json:"remove,omitempty"`
+	MetaData       *Metadata       `json:"metaData,omitempty"`
+	Protocol       *Protocol       `json:"protocol,omitempty"`
+	Cdc            *AddCDCFile     `json:"cdc,omitempty"`
+	CommitInfo     *CommitInfo     `json:"commitInfo,omitempty"`
+	DomainMetadata *DomainMetadata `json:"domainMetadata,omitempty"`
 }
 
 func (s *SingleAction) Unwrap() Action {
@@ -75,6 +76,8 @@ func (s *SingleAction) Unwrap() Action {
 		return s.Cdc
 	} else if s.CommitInfo != nil {
 		return s.CommitInfo
+	} else if s.DomainMetadata != nil {
+		return s.DomainMetadata
 	} else {
 		return nil
 	}

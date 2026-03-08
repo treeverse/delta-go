@@ -14,6 +14,10 @@ type RemoveFile struct {
 	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
+
+	// Row tracking fields 
+	BaseRowId               *int64 `json:"baseRowId,omitempty"`
+	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }
 
 func (r *RemoveFile) IsDataChanged() bool {
