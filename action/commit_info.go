@@ -26,6 +26,7 @@ type CommitInfo struct {
 	OperationMetrics    map[string]string `json:"operationMetrics,omitempty"`
 	UserMetadata        *string           `json:"userMetadata,omitempty"`
 	EngineInfo          *string           `json:"engineInfo,omitempty"`
+	Tags                map[string]string `json:"tags,omitempty"`
 }
 
 func (c *CommitInfo) Wrap() *SingleAction {

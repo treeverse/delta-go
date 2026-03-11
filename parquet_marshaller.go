@@ -384,6 +384,9 @@ func parquetMarshalCommitInfo(add *action.CommitInfo, obj interfaces.MarshalObje
 	if add.EngineInfo != nil {
 		obj.AddField("engineInfo").SetByteArray([]byte(*add.EngineInfo))
 	}
+	if len(add.Tags) > 0 {
+		parquet.MarshalMap(obj, "tags", add.Tags)
+	}
 
 	if add.Job != nil {
 		job := obj.AddField("job").Group()
@@ -456,6 +459,9 @@ func parquetUnmarshalCommitInfo(add *action.CommitInfo, obj interfaces.Unmarshal
 		return err
 	}
 	if err := parquet.UnmarshalString(g, "engineInfo", func(s string) { add.EngineInfo = &s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { add.Tags = m }); err != nil {
 		return err
 	}
 
