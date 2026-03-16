@@ -116,13 +116,6 @@ message SingleAction {
 		  optional binary value (STRING);
 		}
 	  }
-	  optional group deletionVector {
-		required binary storageType (STRING);
-		required binary pathOrInlineDv (STRING);
-		optional int32 offset;
-		required int32 sizeInBytes;
-		required int64 cardinality;
-	  }
 	}
 	optional group remove {
 	  required binary path (STRING);
@@ -141,13 +134,6 @@ message SingleAction {
 		  required binary key (STRING);
 		  optional binary value (STRING);
 		}
-	  }
-	  optional group deletionVector {
-		required binary storageType (STRING);
-		required binary pathOrInlineDv (STRING);
-		optional int32 offset;
-		required int32 sizeInBytes;
-		required int64 cardinality;
 	  }
 	}
 	optional group metaData {
