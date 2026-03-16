@@ -15,7 +15,9 @@ type RemoveFile struct {
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
 
-	// Row tracking fields 
+	// Deletion vector fields
+	DeletionVector *DeletionVector `json:"deletionVector,omitempty"`
+	// Row tracking fields
 	BaseRowId               *int64 `json:"baseRowId,omitempty"`
 	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }

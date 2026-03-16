@@ -125,6 +125,11 @@ func parquetMarshalAdd(add *action.AddFile, obj interfaces.MarshalObject) error 
 	if len(add.Tags) > 0 {
 		parquet.MarshalMap(obj, "tags", add.Tags)
 	}
+	if add.DeletionVector != nil {
+		if err := parquetMarshalDeletionVector(add.DeletionVector, obj.AddField("deletionVector").Group()); err != nil {
+			return err
+		}
+	}
 	if add.BaseRowId != nil {
 		obj.AddField("baseRowId").SetInt64(*add.BaseRowId)
 	}
@@ -161,6 +166,17 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { add.Tags = m }); err != nil {
 		return err
 	}
+	if _, ok := g.GetData()["deletionVector"]; ok {
+		dv := &action.DeletionVector{}
+		dvGroup, err := g.GetField("deletionVector").Group()
+		if err != nil {
+			return err
+		}
+		if err := parquetUnmarshalDeletionVector(dv, dvGroup); err != nil {
+			return err
+		}
+		add.DeletionVector = dv
+	}
 	if err := parquet.UnmarshalInt64(g, "baseRowId", func(s int64) { add.BaseRowId = &s }); err != nil {
 		return err
 	}
@@ -168,6 +184,71 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 		return err
 	}
 
+	return nil
+}
+
+func parquetMarshalDeletionVector(dv *action.DeletionVector, obj interfaces.MarshalObject) error {
+	obj.AddField("storageType").SetByteArray([]byte(dv.StorageType))
+	obj.AddField("pathOrInlineDv").SetByteArray([]byte(dv.PathOrInlineDv))
+	if dv.Offset != nil {
+		obj.AddField("offset").SetInt32(*dv.Offset)
+	}
+	obj.AddField("sizeInBytes").SetInt32(dv.SizeInBytes)
+	obj.AddField("cardinality").SetInt64(dv.Cardinality)
+	return nil
+}
+
+func parquetUnmarshalDeletionVector(dv *action.DeletionVector, obj interfaces.UnmarshalObject) error {
+	if err := parquetUnmarshalDVString(obj, "storageType", func(s string) { dv.StorageType = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVString(obj, "pathOrInlineDv", func(s string) { dv.PathOrInlineDv = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVInt32(obj, "offset", func(s int32) { dv.Offset = &s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVInt32(obj, "sizeInBytes", func(s int32) { dv.SizeInBytes = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVInt64(obj, "cardinality", func(s int64) { dv.Cardinality = s }); err != nil {
+		return err
+	}
+	return nil
+}
+
+// parquetUnmarshalDV* helpers operate directly on an UnmarshalObject (the nested deletionVector group)
+// rather than calling GetField first, since we already have the group object.
+func parquetUnmarshalDVString(obj interfaces.UnmarshalObject, fieldName string, setter func(s string)) error {
+	if _, ok := obj.GetData()[fieldName]; ok {
+		b, err := obj.GetField(fieldName).ByteArray()
+		if err != nil {
+			return err
+		}
+		setter(string(b))
+	}
+	return nil
+}
+
+func parquetUnmarshalDVInt32(obj interfaces.UnmarshalObject, fieldName string, setter func(s int32)) error {
+	if _, ok := obj.GetData()[fieldName]; ok {
+		v, err := obj.GetField(fieldName).Int32()
+		if err != nil {
+			return err
+		}
+		setter(v)
+	}
+	return nil
+}
+
+func parquetUnmarshalDVInt64(obj interfaces.UnmarshalObject, fieldName string, setter func(s int64)) error {
+	if _, ok := obj.GetData()[fieldName]; ok {
+		v, err := obj.GetField(fieldName).Int64()
+		if err != nil {
+			return err
+		}
+		setter(v)
+	}
 	return nil
 }
 
@@ -183,6 +264,17 @@ func parquetMarshalRemove(rm *action.RemoveFile, obj interfaces.MarshalObject) e
 		obj.AddField("size").SetInt64(*rm.Size)
 	}
 	parquet.MarshalMap(obj, "tags", rm.Tags)
+	if rm.DeletionVector != nil {
+		if err := parquetMarshalDeletionVector(rm.DeletionVector, obj.AddField("deletionVector").Group()); err != nil {
+			return err
+		}
+	}
+	if rm.BaseRowId != nil {
+		obj.AddField("baseRowId").SetInt64(*rm.BaseRowId)
+	}
+	if rm.DefaultRowCommitVersion != nil {
+		obj.AddField("defaultRowCommitVersion").SetInt64(*rm.DefaultRowCommitVersion)
+	}
 	return nil
 }
 
@@ -211,6 +303,23 @@ func parquetUnmarshalRemove(rm *action.RemoveFile, obj interfaces.UnmarshalObjec
 		return err
 	}
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { rm.Tags = m }); err != nil {
+		return err
+	}
+	if _, ok := g.GetData()["deletionVector"]; ok {
+		dv := &action.DeletionVector{}
+		dvGroup, err := g.GetField("deletionVector").Group()
+		if err != nil {
+			return err
+		}
+		if err := parquetUnmarshalDeletionVector(dv, dvGroup); err != nil {
+			return err
+		}
+		rm.DeletionVector = dv
+	}
+	if err := parquet.UnmarshalInt64(g, "baseRowId", func(s int64) { rm.BaseRowId = &s }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalInt64(g, "defaultRowCommitVersion", func(s int64) { rm.DefaultRowCommitVersion = &s }); err != nil {
 		return err
 	}
 	return nil
