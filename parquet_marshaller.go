@@ -269,12 +269,6 @@ func parquetMarshalRemove(rm *action.RemoveFile, obj interfaces.MarshalObject) e
 			return err
 		}
 	}
-	if rm.BaseRowId != nil {
-		obj.AddField("baseRowId").SetInt64(*rm.BaseRowId)
-	}
-	if rm.DefaultRowCommitVersion != nil {
-		obj.AddField("defaultRowCommitVersion").SetInt64(*rm.DefaultRowCommitVersion)
-	}
 	return nil
 }
 
@@ -315,12 +309,6 @@ func parquetUnmarshalRemove(rm *action.RemoveFile, obj interfaces.UnmarshalObjec
 			return err
 		}
 		rm.DeletionVector = dv
-	}
-	if err := parquet.UnmarshalInt64(g, "baseRowId", func(s int64) { rm.BaseRowId = &s }); err != nil {
-		return err
-	}
-	if err := parquet.UnmarshalInt64(g, "defaultRowCommitVersion", func(s int64) { rm.DefaultRowCommitVersion = &s }); err != nil {
-		return err
 	}
 	return nil
 }

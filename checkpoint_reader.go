@@ -123,8 +123,6 @@ message SingleAction {
 		required int32 sizeInBytes;
 		required int64 cardinality;
 	  }
-	  optional int64 baseRowId;
-	  optional int64 defaultRowCommitVersion;
 	}
 	optional group remove {
 	  required binary path (STRING);
@@ -151,8 +149,6 @@ message SingleAction {
 		required int32 sizeInBytes;
 		required int64 cardinality;
 	  }
-	  optional int64 baseRowId;
-	  optional int64 defaultRowCommitVersion;
 	}
 	optional group metaData {
 	  optional binary id (STRING);
