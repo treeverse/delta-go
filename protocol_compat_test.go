@@ -36,12 +36,34 @@ func TestAssertProtocolRead_V2Reader_Rejected(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestAssertProtocolRead_V3Reader_Rejected(t *testing.T) {
+func TestAssertProtocolRead_V3Reader_DeletionVectorsOnly_Passes(t *testing.T) {
+	p := &action.Protocol{
+		MinReaderVersion: 3,
+		MinWriterVersion: 7,
+		ReaderFeatures:   []string{"deletionVectors"},
+		WriterFeatures:   []string{"deletionVectors"},
+	}
+	err := assertProtocolRead(p)
+	assert.NoError(t, err)
+}
+
+func TestAssertProtocolRead_V3Reader_UnknownFeature_Rejected(t *testing.T) {
 	p := &action.Protocol{
 		MinReaderVersion: 3,
 		MinWriterVersion: 7,
 		ReaderFeatures:   []string{"columnMapping"},
 		WriterFeatures:   []string{"columnMapping", "identityColumns"},
+	}
+	err := assertProtocolRead(p)
+	assert.Error(t, err)
+}
+
+func TestAssertProtocolRead_V3Reader_DVPlusUnknownFeature_Rejected(t *testing.T) {
+	p := &action.Protocol{
+		MinReaderVersion: 3,
+		MinWriterVersion: 7,
+		ReaderFeatures:   []string{"deletionVectors", "columnMapping"},
+		WriterFeatures:   []string{"deletionVectors", "columnMapping"},
 	}
 	err := assertProtocolRead(p)
 	assert.Error(t, err)

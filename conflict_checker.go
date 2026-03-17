@@ -242,9 +242,37 @@ func (c *conflictChecker) checkForUpdatedApplicationTransactionIdsThatCurrentTxn
 	return nil
 }
 
+// supportedReaderFeatures is the set of reader features this library can handle.
+// At reader version 3, Delta uses a table-features model: every feature in
+// readerFeatures must be understood by the reader. Reject any feature not in this set.
+var supportedReaderFeatures = map[string]struct{}{
+	"deletionVectors": {},
+}
+
 func assertProtocolRead(protocol *action.Protocol) error {
-	if protocol != nil && action.ReaderVersion < protocol.MinReaderVersion {
+	if protocol == nil {
+		return nil
+	}
+	if action.ReaderVersion < protocol.MinReaderVersion {
 		return errno.InvalidProtocolVersionError()
+	}
+	// minReaderVersion=2 (column mapping) uses the implicit version model:
+	// the version number itself implies which features are required. Our
+	// ReaderVersion constant (3) is >= 2 numerically, but we do not implement
+	// column mapping and must reject these tables explicitly.
+	if protocol.MinReaderVersion == 2 {
+		return errno.InvalidProtocolVersionError()
+	}
+	// At minReaderVersion=3, Delta switches to the table-features model:
+	// every entry in readerFeatures is an explicit capability the reader
+	// must understand. Reject any feature we have not implemented, so we
+	// never silently produce incorrect results.
+	if protocol.MinReaderVersion >= 3 {
+		for _, f := range protocol.ReaderFeatures {
+			if _, ok := supportedReaderFeatures[f]; !ok {
+				return errno.UnsupportedReaderFeatureError(f)
+			}
+		}
 	}
 	return nil
 }
