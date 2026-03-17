@@ -11,7 +11,7 @@ type RemoveFile struct {
 	DataChange           bool              `json:"dataChange"`
 	DeletionTimestamp    *int64            `json:"deletionTimestamp,omitempty"`
 	ExtendedFileMetadata bool              `json:"extendedFileMetadata,omitempty"`
-	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
+	PartitionValues      map[string]string `json:"partitionValues"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
 	Stats                string            `json:"stats,omitempty"`
