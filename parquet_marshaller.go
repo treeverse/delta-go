@@ -269,6 +269,9 @@ func parquetMarshalRemove(rm *action.RemoveFile, obj interfaces.MarshalObject) e
 			return err
 		}
 	}
+	if len(rm.Stats) > 0 {
+		obj.AddField("stats").SetByteArray([]byte(rm.Stats))
+	}
 	return nil
 }
 
@@ -297,6 +300,9 @@ func parquetUnmarshalRemove(rm *action.RemoveFile, obj interfaces.UnmarshalObjec
 		return err
 	}
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { rm.Tags = m }); err != nil {
+		return err
+	}
+	if err := parquet.UnmarshalString(g, "stats", func(s string) { rm.Stats = s }); err != nil {
 		return err
 	}
 	if _, ok := g.GetData()["deletionVector"]; ok {

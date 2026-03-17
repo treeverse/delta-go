@@ -14,6 +14,7 @@ type RemoveFile struct {
 	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
+	Stats                string            `json:"stats,omitempty"`
 
 	// Deletion vector fields
 	DeletionVector *DeletionVector `json:"deletionVector,omitempty"`
