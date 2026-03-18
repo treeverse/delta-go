@@ -13,7 +13,7 @@ import (
 type Metadata struct {
 	ID               string            `json:"id"`
 	Name             string            `json:"name"`
-	Description      string            `json:"description"`
+	Description      string            `json:"description,omitempty"`
 	Format           Format            `json:"format"`
 	SchemaString     string            `json:"schemaString"`
 	PartitionColumns []string          `json:"partitionColumns"`
