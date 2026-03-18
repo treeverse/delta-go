@@ -125,17 +125,6 @@ func parquetMarshalAdd(add *action.AddFile, obj interfaces.MarshalObject) error 
 	if len(add.Tags) > 0 {
 		parquet.MarshalMap(obj, "tags", add.Tags)
 	}
-	if add.DeletionVector != nil {
-		if err := parquetMarshalDeletionVector(add.DeletionVector, obj.AddField("deletionVector").Group()); err != nil {
-			return err
-		}
-	}
-	if add.BaseRowId != nil {
-		obj.AddField("baseRowId").SetInt64(*add.BaseRowId)
-	}
-	if add.DefaultRowCommitVersion != nil {
-		obj.AddField("defaultRowCommitVersion").SetInt64(*add.DefaultRowCommitVersion)
-	}
 	return nil
 }
 
@@ -184,17 +173,6 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 		return err
 	}
 
-	return nil
-}
-
-func parquetMarshalDeletionVector(dv *action.DeletionVector, obj interfaces.MarshalObject) error {
-	obj.AddField("storageType").SetByteArray([]byte(dv.StorageType))
-	obj.AddField("pathOrInlineDv").SetByteArray([]byte(dv.PathOrInlineDv))
-	if dv.Offset != nil {
-		obj.AddField("offset").SetInt32(*dv.Offset)
-	}
-	obj.AddField("sizeInBytes").SetInt32(dv.SizeInBytes)
-	obj.AddField("cardinality").SetInt64(dv.Cardinality)
 	return nil
 }
 
@@ -264,14 +242,6 @@ func parquetMarshalRemove(rm *action.RemoveFile, obj interfaces.MarshalObject) e
 		obj.AddField("size").SetInt64(*rm.Size)
 	}
 	parquet.MarshalMap(obj, "tags", rm.Tags)
-	if rm.DeletionVector != nil {
-		if err := parquetMarshalDeletionVector(rm.DeletionVector, obj.AddField("deletionVector").Group()); err != nil {
-			return err
-		}
-	}
-	if len(rm.Stats) > 0 {
-		obj.AddField("stats").SetByteArray([]byte(rm.Stats))
-	}
 	return nil
 }
 
