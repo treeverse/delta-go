@@ -85,12 +85,6 @@ func TestLocalParquetReadWrite(t *testing.T) {
 				PartitionValues:  map[string]string{"date": "2024-01-01"},
 				Size:             4096,
 				ModificationTime: 1700000000000,
-				DeletionVector: &action.DeletionVector{
-					StorageType:    "u",
-					PathOrInlineDv: "ab^-aqEH.-t@S}K{vb[*k^",
-					SizeInBytes:    36,
-					Cardinality:    3,
-				},
 			},
 		},
 		{
@@ -99,13 +93,6 @@ func TestLocalParquetReadWrite(t *testing.T) {
 				DataChange:       false,
 				Size:             2048,
 				ModificationTime: 1700000001000,
-				DeletionVector: &action.DeletionVector{
-					StorageType:    "u",
-					PathOrInlineDv: "ab^-aqEH.-t@S}K{vb[*k^",
-					Offset:         util.PtrOf[int32](4),
-					SizeInBytes:    40,
-					Cardinality:    5,
-				},
 			},
 		},
 		{
@@ -123,12 +110,6 @@ func TestLocalParquetReadWrite(t *testing.T) {
 				Path:              "part-00000.parquet",
 				DataChange:        true,
 				DeletionTimestamp: util.PtrOf[int64](1700000000000),
-				DeletionVector: &action.DeletionVector{
-					StorageType:    "u",
-					PathOrInlineDv: "ab^-aqEH.-t@S}K{vb[*k^",
-					SizeInBytes:    36,
-					Cardinality:    3,
-				},
 			},
 		},
 		{

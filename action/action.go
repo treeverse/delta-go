@@ -7,7 +7,7 @@ import (
 	"github.com/csimplestring/delta-go/errno"
 )
 
-const ReaderVersion = 3
+const ReaderVersion = 1
 const WriterVersion = 2
 const MinReaderVersionProp = "delta.minReaderVersion"
 const MinWriterVersionProp = "delta.minWriterVersion"
