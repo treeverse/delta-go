@@ -272,6 +272,7 @@ func assertProtocolRead(protocol *action.Protocol) error {
 				return errno.UnsupportedReaderFeatureError(f)
 			}
 		}
+		return nil
 	}
 	return errno.InvalidProtocolVersionError()
 }
