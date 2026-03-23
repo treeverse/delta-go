@@ -11,11 +11,14 @@ type RemoveFile struct {
 	DataChange           bool              `json:"dataChange"`
 	DeletionTimestamp    *int64            `json:"deletionTimestamp,omitempty"`
 	ExtendedFileMetadata bool              `json:"extendedFileMetadata,omitempty"`
-	PartitionValues      map[string]string `json:"partitionValues,omitempty"`
+	PartitionValues      map[string]string `json:"partitionValues"`
 	Size                 *int64            `json:"size,omitempty"`
 	Tags                 map[string]string `json:"tags,omitempty"`
+	Stats                string            `json:"stats,omitempty"`
 
-	// Row tracking fields 
+	// Deletion vector fields
+	DeletionVector *DeletionVector `json:"deletionVector,omitempty"`
+	// Row tracking fields
 	BaseRowId               *int64 `json:"baseRowId,omitempty"`
 	DefaultRowCommitVersion *int64 `json:"defaultRowCommitVersion,omitempty"`
 }

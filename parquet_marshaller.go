@@ -125,12 +125,6 @@ func parquetMarshalAdd(add *action.AddFile, obj interfaces.MarshalObject) error 
 	if len(add.Tags) > 0 {
 		parquet.MarshalMap(obj, "tags", add.Tags)
 	}
-	if add.BaseRowId != nil {
-		obj.AddField("baseRowId").SetInt64(*add.BaseRowId)
-	}
-	if add.DefaultRowCommitVersion != nil {
-		obj.AddField("defaultRowCommitVersion").SetInt64(*add.DefaultRowCommitVersion)
-	}
 	return nil
 }
 
@@ -161,6 +155,17 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { add.Tags = m }); err != nil {
 		return err
 	}
+	if _, ok := g.GetData()["deletionVector"]; ok {
+		dv := &action.DeletionVector{}
+		dvGroup, err := g.GetField("deletionVector").Group()
+		if err != nil {
+			return err
+		}
+		if err := parquetUnmarshalDeletionVector(dv, dvGroup); err != nil {
+			return err
+		}
+		add.DeletionVector = dv
+	}
 	if err := parquet.UnmarshalInt64(g, "baseRowId", func(s int64) { add.BaseRowId = &s }); err != nil {
 		return err
 	}
@@ -169,6 +174,45 @@ func parquetUnmarshalAdd(add *action.AddFile, obj interfaces.UnmarshalObject) er
 	}
 
 	return nil
+}
+
+func parquetUnmarshalDeletionVector(dv *action.DeletionVector, obj interfaces.UnmarshalObject) error {
+	if err := parquetUnmarshalDVField(obj, "storageType", dvString, func(s string) { dv.StorageType = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVField(obj, "pathOrInlineDv", dvString, func(s string) { dv.PathOrInlineDv = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVField(obj, "offset", interfaces.UnmarshalElement.Int32, func(s int32) { dv.Offset = &s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVField(obj, "sizeInBytes", interfaces.UnmarshalElement.Int32, func(s int32) { dv.SizeInBytes = s }); err != nil {
+		return err
+	}
+	if err := parquetUnmarshalDVField(obj, "cardinality", interfaces.UnmarshalElement.Int64, func(s int64) { dv.Cardinality = s }); err != nil {
+		return err
+	}
+	return nil
+}
+
+// parquetUnmarshalDVField is a generic helper for reading a single field from the nested
+// deletionVector group. get extracts and converts the value from the Parquet element;
+// setter writes it into the target struct.
+func parquetUnmarshalDVField[T string | int32 | int64](obj interfaces.UnmarshalObject, fieldName string, get func(interfaces.UnmarshalElement) (T, error), setter func(T)) error {
+	if _, ok := obj.GetData()[fieldName]; ok {
+		v, err := get(obj.GetField(fieldName))
+		if err != nil {
+			return err
+		}
+		setter(v)
+	}
+	return nil
+}
+
+// dvString adapts UnmarshalElement.ByteArray to return a string, for use with parquetUnmarshalDVField.
+func dvString(e interfaces.UnmarshalElement) (string, error) {
+	b, err := e.ByteArray()
+	return string(b), err
 }
 
 func parquetMarshalRemove(rm *action.RemoveFile, obj interfaces.MarshalObject) error {
@@ -212,6 +256,20 @@ func parquetUnmarshalRemove(rm *action.RemoveFile, obj interfaces.UnmarshalObjec
 	}
 	if err := parquet.UnmarshalMap(g, "tags", func(m map[string]string) { rm.Tags = m }); err != nil {
 		return err
+	}
+	if err := parquet.UnmarshalString(g, "stats", func(s string) { rm.Stats = s }); err != nil {
+		return err
+	}
+	if _, ok := g.GetData()["deletionVector"]; ok {
+		dv := &action.DeletionVector{}
+		dvGroup, err := g.GetField("deletionVector").Group()
+		if err != nil {
+			return err
+		}
+		if err := parquetUnmarshalDeletionVector(dv, dvGroup); err != nil {
+			return err
+		}
+		rm.DeletionVector = dv
 	}
 	return nil
 }
