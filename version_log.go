@@ -1,6 +1,8 @@
 package deltago
 
 import (
+	"fmt"
+
 	"github.com/csimplestring/delta-go/action"
 	"github.com/csimplestring/delta-go/iter"
 	"github.com/csimplestring/delta-go/store"
@@ -82,6 +84,9 @@ func (m *MemOptimizedCheckpoint) Version() int64 {
 }
 
 func (m *MemOptimizedCheckpoint) Actions() ([]action.Action, error) {
+	if m.cr == nil {
+		return nil, fmt.Errorf("checkpoint reader is nil - checkpoint functionality not available")
+	}
 	cr := *(m.cr)
 	i, err := cr.Read(m.path)
 	if err != nil {
